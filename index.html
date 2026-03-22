@@ -960,119 +960,42 @@ initAuth();
   </script>
 <script>
 (function(){
-  var SBURL='https://jujqdxoybhkyzphztzcf.supabase.co';
-  var SBKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
-  function injectImages(map){
-    document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(link){
-      var m=link.href.match(/haraj\.com\.sa\/(\d{9,})/);
-      if(!m)return;
-      var id=m[1],imgUrl=map[id];
-      if(!imgUrl)return;
-      var el=link;
-      while(el&&!el.querySelector('.card-img'))el=el.parentElement;
-      if(!el)return;
-      var ci=el.querySelector('.card-img');
-      if(!ci||ci.querySelector('img'))return;
-      var img=new Image();img.src=imgUrl;img.loading='lazy';
-      img.style.cssText='width:100%;height:100%;object-fit:cover;';
-      ci.innerHTML='';ci.appendChild(img);
+  var U='https://jujqdxoybhkyzphztzcf.supabase.co';
+  var K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
+  function buildCards(rows){
+    var grid=document.querySelector('.listings-grid');
+    if(!grid)return;
+    var ex={};
+    document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(a){
+      var m=a.href.match(/haraj\.com\.sa\/(\d{9,})/);
+      if(m)ex[m[1]]=1;
     });
+    grid.querySelectorAll('[data-scraped]').forEach(function(c){c.remove();});
+    rows.filter(function(r){return r.source_id&&!ex[r.source_id]&&r.image_url;})
+      .forEach(function(r){
+        var c=document.createElement('a');
+        c.href=r.url||'#';c.target='_blank';c.rel='noopener';
+        c.className='listing-card';c.dataset.scraped='1';
+        c.innerHTML='<div class="card-badge">\u062c\u062f\u064a\u062f<\/div>'+
+          '<div class="card-img" style="background:#1a1f35;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">'+
+          '<img src="'+r.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><\/div>'+
+          '<div class="card-body"><div class="card-title">'+(r.title||'\u0633\u064a\u0627\u0631\u0629')+'<\/div><\/div>'+
+          '<div class="card-footer"><span class="card-price">'+(r.price?r.price+' \u0631\u064a\u0627\u0644':'\u0627\u0644\u0633\u0639\u0631 \u0639\u0646\u062f \u0627\u0644\u062a\u0648\u0627\u0635\u0644')+'<\/span><\/div>';
+        grid.insertBefore(c,grid.firstChild);
+      });
   }
   function refresh(){
-    fetch(SBURL+'/rest/v1/listings?select=source_id,image_url&image_url=not.is.null',{
-      headers:{apikey:SBKEY,Authorization:'Bearer '+SBKEY}
+    fetch(U+'/rest/v1/listings?select=source_id,image_url,url,title,price&image_url=not.is.null&limit=100',{
+      headers:{apikey:K,Authorization:'Bearer '+K}
     }).then(function(r){return r.json();}).then(function(rows){
       if(!Array.isArray(rows))return;
-      var map={};
-      rows.forEach(function(r){if(r.image_url)map[r.source_id]=r.image_url;});
-      window._harajImgMap=map;
-      injectImages(map);
+      window._harajImgMap=rows;
+      buildCards(rows);
       setTimeout(refresh,7200000);
     }).catch(function(){setTimeout(refresh,300000);});
   }
-  if(window.MutationObserver){
-    new MutationObserver(function(){
-      var SBURL='https://jujqdxoybhkyzphztzcf.supabase.co';
-      var SBKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
-
-      function makeCard(row){
-        var card=document.createElement('a');
-        card.href=row.url||('#');
-        card.target='_blank';
-        card.rel='noopener';
-        card.className='listing-card';
-        card.dataset.scraped='1';
-        var imgHtml=row.image_url
-          ?'<img src="'+row.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;">'
-          :'<span style="font-size:2rem">🚗</span>';
-        card.innerHTML=
-          '<div class="card-badge">جديد</div>'+
-          '<div class="card-img" style="background:#1a1f35;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">'+imgHtml+'</div>'+
-          '<div class="card-body"><div class="card-title">'+(row.title||'سيارة')+'</div></div>'+
-          '<div class="card-footer"><span class="card-price">'+(row.price?row.price+' ريال':'السعر عند التواصل')+'</span></div>';
-        return card;
-      }
-
-      function injectAndBuild(rows){
-        // Build map of source_id -> row
-        var map={};
-        rows.forEach(function(r){if(r.source_id)map[r.source_id]=r;});
-        window._harajImgMap=map;
-
-        // 1. Inject images into existing cards
-        document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(link){
-          var m=link.href.match(/haraj\.com\.sa\/(\d{9,})/);
-          if(!m)return;
-          var row=map[m[1]];
-          if(!row||!row.image_url)return;
-          var el=link;
-          while(el&&!el.classList.contains('listing-card'))el=el.parentElement;
-          if(!el)return;
-          var ci=el.querySelector('.card-img');
-          if(!ci||ci.querySelector('img'))return;
-          var img=new Image();
-          img.src=row.image_url;
-          img.loading='lazy';
-          img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;';
-          ci.style.cssText+='overflow:hidden;position:relative;';
-          ci.innerHTML='';ci.appendChild(img);
-        });
-
-        // 2. Build new cards for scraped rows not already in page
-        var grid=document.querySelector('.listings-grid');
-        if(!grid)return;
-        var existingIds={};
-        document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(a){
-          var m=a.href.match(/haraj\.com\.sa\/(\d{9,})/);
-          if(m)existingIds[m[1]]=1;
-        });
-        var toAdd=rows.filter(function(r){return r.source_id&&!existingIds[r.source_id]&&r.image_url;});
-        // Remove old scraped cards first
-        grid.querySelectorAll('[data-scraped]').forEach(function(c){c.remove();});
-        // Prepend new ones
-        var frag=document.createDocumentFragment();
-        toAdd.forEach(function(r){frag.appendChild(makeCard(r));});
-        grid.insertBefore(frag,grid.firstChild);
-      }
-
-      function refresh(){
-        fetch(SBURL+'/rest/v1/listings?select=source_id,image_url,url,title,price,city&image_url=not.is.null&order=scraped_at.desc&limit=100',{
-          headers:{apikey:SBKEY,Authorization:'Bearer '+SBKEY}
-        }).then(function(r){return r.json();}).then(function(rows){
-          if(!Array.isArray(rows))return;
-          injectAndBuild(rows);
-          setTimeout(refresh,7200000);
-        }).catch(function(){setTimeout(refresh,300000);});
-      }
-
-      if(window.MutationObserver){
-        new MutationObserver(function(){
-          if(window._harajImgMap)injectAndBuild(Object.values(window._harajImgMap).filter(function(r){return r.image_url;}));
-        }).observe(document.body,{childList:true,subtree:true});
-      }
-
-      setTimeout(refresh,1200);
-    })()
+  refresh();
+})();
 </script>
 </body>
 </html>
