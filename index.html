@@ -992,11 +992,87 @@ initAuth();
   }
   if(window.MutationObserver){
     new MutationObserver(function(){
-      if(window._harajImgMap)injectImages(window._harajImgMap);
-    }).observe(document.body,{childList:true,subtree:true});
-  }
-  setTimeout(refresh,1200);
-})();
+      var SBURL='https://jujqdxoybhkyzphztzcf.supabase.co';
+      var SBKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
+
+      function makeCard(row){
+        var card=document.createElement('a');
+        card.href=row.url||('#');
+        card.target='_blank';
+        card.rel='noopener';
+        card.className='listing-card';
+        card.dataset.scraped='1';
+        var imgHtml=row.image_url
+          ?'<img src="'+row.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;">'
+          :'<span style="font-size:2rem">🚗</span>';
+        card.innerHTML=
+          '<div class="card-badge">جديد</div>'+
+          '<div class="card-img" style="background:#1a1f35;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">'+imgHtml+'</div>'+
+          '<div class="card-body"><div class="card-title">'+(row.title||'سيارة')+'</div></div>'+
+          '<div class="card-footer"><span class="card-price">'+(row.price?row.price+' ريال':'السعر عند التواصل')+'</span></div>';
+        return card;
+      }
+
+      function injectAndBuild(rows){
+        // Build map of source_id -> row
+        var map={};
+        rows.forEach(function(r){if(r.source_id)map[r.source_id]=r;});
+        window._harajImgMap=map;
+
+        // 1. Inject images into existing cards
+        document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(link){
+          var m=link.href.match(/haraj\.com\.sa\/(\d{9,})/);
+          if(!m)return;
+          var row=map[m[1]];
+          if(!row||!row.image_url)return;
+          var el=link;
+          while(el&&!el.classList.contains('listing-card'))el=el.parentElement;
+          if(!el)return;
+          var ci=el.querySelector('.card-img');
+          if(!ci||ci.querySelector('img'))return;
+          var img=new Image();
+          img.src=row.image_url;
+          img.loading='lazy';
+          img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;';
+          ci.style.cssText+='overflow:hidden;position:relative;';
+          ci.innerHTML='';ci.appendChild(img);
+        });
+
+        // 2. Build new cards for scraped rows not already in page
+        var grid=document.querySelector('.listings-grid');
+        if(!grid)return;
+        var existingIds={};
+        document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(a){
+          var m=a.href.match(/haraj\.com\.sa\/(\d{9,})/);
+          if(m)existingIds[m[1]]=1;
+        });
+        var toAdd=rows.filter(function(r){return r.source_id&&!existingIds[r.source_id]&&r.image_url;});
+        // Remove old scraped cards first
+        grid.querySelectorAll('[data-scraped]').forEach(function(c){c.remove();});
+        // Prepend new ones
+        var frag=document.createDocumentFragment();
+        toAdd.forEach(function(r){frag.appendChild(makeCard(r));});
+        grid.insertBefore(frag,grid.firstChild);
+      }
+
+      function refresh(){
+        fetch(SBURL+'/rest/v1/listings?select=source_id,image_url,url,title,price,city&image_url=not.is.null&order=scraped_at.desc&limit=100',{
+          headers:{apikey:SBKEY,Authorization:'Bearer '+SBKEY}
+        }).then(function(r){return r.json();}).then(function(rows){
+          if(!Array.isArray(rows))return;
+          injectAndBuild(rows);
+          setTimeout(refresh,7200000);
+        }).catch(function(){setTimeout(refresh,300000);});
+      }
+
+      if(window.MutationObserver){
+        new MutationObserver(function(){
+          if(window._harajImgMap)injectAndBuild(Object.values(window._harajImgMap).filter(function(r){return r.image_url;}));
+        }).observe(document.body,{childList:true,subtree:true});
+      }
+
+      setTimeout(refresh,1200);
+    })()
 </script>
 </body>
 </html>
