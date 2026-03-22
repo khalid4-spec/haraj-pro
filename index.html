@@ -962,45 +962,43 @@ initAuth();
 (function(){
   var U='https://jujqdxoybhkyzphztzcf.supabase.co';
   var K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
+  var _rows=null;
   function buildCards(rows){
-    var dbg={};
     var grid=document.querySelector('.listings-grid');
-    dbg.grid=!!grid;
-    if(!grid){window._bcDbg=dbg;return;}
+    if(!grid)return;
     var ex={};
     document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(a){
       var m=a.href.match(/haraj\.com\.sa\/(\d{9,})/);
       if(m)ex[m[1]]=1;
     });
-    dbg.exKeys=Object.keys(ex).length;
     grid.querySelectorAll('[data-scraped]').forEach(function(c){c.remove();});
-    var toAdd=rows.filter(function(r){return r.source_id&&!ex[r.source_id]&&r.image_url;});
-    dbg.toAdd=toAdd.length;
-    toAdd.forEach(function(r){
-      var c=document.createElement('a');
-      c.href=r.url||'#';c.target='_blank';c.rel='noopener';
-      c.className='listing-card';c.dataset.scraped='1';
-      c.innerHTML='<div class="card-badge">\u062c\u062f\u064a\u062f<\/div>'+
-        '<div class="card-img" style="background:#1a1f35;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">'+
-        '<img src="'+r.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><\/div>'+
-        '<div class="card-body"><div class="card-title">'+(r.title||'\u0633\u064a\u0627\u0631\u0629')+'<\/div><\/div>'+
-        '<div class="card-footer"><span class="card-price">'+(r.price?r.price+' \u0631\u064a\u0627\u0644':'\u0627\u0644\u0633\u0639\u0631 \u0639\u0646\u062f \u0627\u0644\u062a\u0648\u0627\u0635\u0644')+'<\/span><\/div>';
-      grid.insertBefore(c,grid.firstChild);
-    });
-    dbg.inserted=document.querySelectorAll('[data-scraped]').length;
-    window._bcDbg=dbg;
+    rows.filter(function(r){return r.source_id&&!ex[r.source_id]&&r.image_url;})
+      .forEach(function(r){
+        var c=document.createElement('a');
+        c.href=r.url||'#';c.target='_blank';c.rel='noopener';
+        c.className='listing-card';c.dataset.scraped='1';
+        c.innerHTML='<div class="card-badge">\u062c\u062f\u064a\u062f<\/div>'+
+          '<div class="card-img" style="background:#1a1f35;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">'+
+          '<img src="'+r.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><\/div>'+
+          '<div class="card-body"><div class="card-title">'+(r.title||'\u0633\u064a\u0627\u0631\u0629')+'<\/div><\/div>'+
+          '<div class="card-footer"><span class="card-price">'+(r.price?r.price+' \u0631\u064a\u0627\u0644':'\u0627\u0644\u0633\u0639\u0631 \u0639\u0646\u062f \u0627\u0644\u062a\u0648\u0627\u0635\u0644')+'<\/span><\/div>';
+        grid.insertBefore(c,grid.firstChild);
+      });
   }
-  window._runRefresh=function(){
+  function refresh(){
     fetch(U+'/rest/v1/listings?select=source_id,image_url,url,title,price&image_url=not.is.null&limit=100',{
       headers:{apikey:K,Authorization:'Bearer '+K}
     }).then(function(r){return r.json();}).then(function(rows){
       if(!Array.isArray(rows))return;
       window._harajImgMap=rows;
+      _rows=rows;
       buildCards(rows);
-      setTimeout(window._runRefresh,7200000);
-    }).catch(function(){setTimeout(window._runRefresh,300000);});
-  };
-  window._runRefresh();
+      setTimeout(function(){buildCards(rows);},1000);
+      setTimeout(function(){buildCards(rows);},3000);
+      setTimeout(refresh,7200000);
+    }).catch(function(){setTimeout(refresh,300000);});
+  }
+  refresh();
 })();
 </script>
 </body>
