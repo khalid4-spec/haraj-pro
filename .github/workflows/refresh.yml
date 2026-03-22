@@ -23,43 +23,69 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           python3 << 'PYEOF'
-          import re, requests
+          import re, json, requests
           from bs4 import BeautifulSoup
 
           SB_URL = __import__('os').environ['SUPABASE_URL']
           SB_KEY = __import__('os').environ['SUPABASE_KEY']
           HEADERS = {'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'resolution=merge-duplicates'}
 
+          # Only keep listings whose title contains a model year — actual cars for sale
+          YEAR_RE = re.compile(r'\b(19[89]\d|20[012]\d)\b')
+
           rows = []
-          for page in range(1, 6):
+          seen_ids = set()
+
+          for page in range(1, 9):
               try:
-                  r = requests.get(f'https://haraj.com.sa/search/%D8%B3%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA/?page={page}', headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
+                  url = f'https://haraj.com.sa/tags/%D8%AD%D8%B1%D8%A7%D8%AC%20%D8%A7%D9%84%D8%B3%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA/?page={page}'
+                  r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15)
                   soup = BeautifulSoup(r.text, 'html.parser')
-                  for a in soup.find_all('a', href=True):
-                      href = a['href']
-                      id_m = re.search(r'haraj\.com\.sa/(\d{9,})', href)
-                      if not id_m:
-                          continue
-                      sid = id_m.group(1)
-                      img_tag = a.find('img')
-                      img_url = None
-                      if img_tag:
-                          src = img_tag.get('src') or img_tag.get('data-src') or ''
-                          if 'thumbcdn' in src:
-                              # Strip any existing suffix and add -400x400.webp
-                              src = re.sub(r'-\d+x\d+\.webp$', '', src)
-                              if not src.endswith('.webp'):
-                                  img_url = src + '-400x400.webp'
-                              else:
-                                  img_url = src
-                      title_el = a.find(class_=re.compile('title|name|heading', re.I))
-                      title = title_el.get_text(strip=True) if title_el else a.get_text(strip=True)[:80]
-                      rows.append({'source': 'haraj', 'source_id': sid, 'url': href, 'title': title, 'image_url': img_url})
+
+                  # Parse structured JSON-LD ItemList embedded in the SSR page
+                  found = 0
+                  for ld_tag in soup.find_all('script', type='application/ld+json'):
+                      try:
+                          data = json.loads(ld_tag.string or '')
+                          if data.get('@type') != 'WebPage':
+                              continue
+                          items = data.get('mainEntity', {}).get('itemListElement', [])
+                          for it in items:
+                              item = it.get('item', {})
+                              title = item.get('name', '').strip()
+                              # Skip if no model year in title — not a car for sale
+                              if not YEAR_RE.search(title):
+                                  continue
+                              item_url = item.get('url', '')
+                              id_m = re.search(r'haraj\.com\.sa/(\d{9,})', item_url)
+                              if not id_m:
+                                  continue
+                              sid = id_m.group(1)
+                              if sid in seen_ids:
+                                  continue
+                              seen_ids.add(sid)
+                              images = item.get('image', [])
+                              img_url = images[0] if images else None
+                              rows.append({'source': 'haraj', 'source_id': sid, 'url': item_url, 'title': title, 'image_url': img_url})
+                              found += 1
+                      except Exception:
+                          pass
+
+                  print(f'Page {page}: found {found} car listings')
+                  if found == 0:
+                      break  # No more pages
+
               except Exception as e:
                   print(f'Page {page} error: {e}')
 
           if rows:
-              import json
               resp = requests.post(SB_URL + '/rest/v1/listings', headers=HEADERS, data=json.dumps(rows))
               print(f'Upserted {len(rows)} rows, status {resp.status_code}')
+
+          # Cleanup: remove any rows without a year in the title (safety net)
+          del_resp = requests.delete(
+              SB_URL + '/rest/v1/listings?image_url=not.is.null&title=not.like.*19[89]*&title=not.like.*200*&title=not.like.*201*&title=not.like.*202*',
+              headers={**HEADERS, 'Prefer': 'return=representation'}
+          )
+          print(f'Cleanup status: {del_resp.status_code}')
           PYEOF
