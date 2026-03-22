@@ -949,5 +949,14 @@ async function initAuth() {
 }
 initAuth();
 </script>
+  <script>
+    (function(){
+        var s=document.querySelector('body script:not([src])');
+        if(s&&typeof window.showSection==='undefined'){
+              try{(new Function(s.textContent))();}catch(e){console.error('bootstrap:',e);}
+        }
+    })();
+  </script>
+  </script>
 </body>
 </html>
