@@ -17,49 +17,49 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Scrape haraj.com.sa and update Supabase
+      - name: Scrape and upsert
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          python3 - <<'PYEOF'
-          import requests, re
+          python3 << 'PYEOF'
+          import re, requests
           from bs4 import BeautifulSoup
 
-          SUPABASE_URL = 'https://jujqdxoybhkyzphztzcf.supabase.co'
-          SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY'
-          HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; HarajBot/1.0)', 'Accept-Language': 'ar-SA,ar;q=0.9'}
-          BRANDS = {'تويوتا':'Toyota','نيسان':'Nissan','هوندا':'Honda','فورد':'Ford','شيفروليه':'Chevrolet','هيونداي':'Hyundai','كيا':'Kia','لكزس':'Lexus','مرسيدس':'Mercedes','بي ام':'BMW','أودي':'Audi','جيب':'Jeep','جي ام سي':'GMC','دودج':'Dodge','هايلكس':'Toyota','لاندكروزر':'Toyota','كامري':'Toyota','كورولا':'Toyota','باترول':'Nissan'}
-          CITIES = ['الرياض','جدة','مكة','المدينة','الدمام','الخبر','تبوك','أبها','جازان','حائل','بريدة','الطائف']
+          SB_URL = __import__('os').environ['SUPABASE_URL']
+          SB_KEY = __import__('os').environ['SUPABASE_KEY']
+          HEADERS = {'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'resolution=merge-duplicates'}
 
-          all_listings, seen = [], set()
-
+          rows = []
           for page in range(1, 6):
               try:
-                  url = f'https://haraj.com.sa/search/%D8%B3%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA/?page={page}'
-                  r = requests.get(url, headers=HEADERS, timeout=30)
-                  html = r.text
-                  soup = BeautifulSoup(html, 'html.parser')
-                  imgs_raw = re.findall(r'https://thumbcdn\.haraj\.com\.sa/[^\s'"<>]+', html)
-                  imgs = [re.sub(r'-\d+x\d+\.webp$','',re.sub(r'-\d+x\d+\.jpg$','.jpg',i)) for i in imgs_raw]
-                  img_idx = 0
+                  r = requests.get(f'https://haraj.com.sa/search/%D8%B3%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA/?page={page}', headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
+                  soup = BeautifulSoup(r.text, 'html.parser')
                   for a in soup.find_all('a', href=True):
-                      m = re.search(r'/(\d{10,})', a['href'])
-                      if not m: continue
-                      id_ = m.group(1)
-                      if id_ in seen: continue
-                      seen.add(id_)
-                      text = a.get_text(' ', strip=True)
-                      img_url = imgs[img_idx] if img_idx < len(imgs) else None
-                      img_idx += 1
-                      brand_en = next((en for ar,en in BRANDS.items() if ar in text), None)
-                      brand_ar = next((ar for ar in BRANDS if ar in text), None)
-                      pm = re.search(r'([\d,]+)\s*(?:ريال|SAR)', text)
-                      ym = re.search(r'(20\d\d|19\d\d)', text)
-                      city = next((c for c in CITIES if c in text), None)
-                      all_listings.append({'source':'haraj','source_id':id_,'brand_ar':brand_ar,'brand_en':brand_en,'title':text[:200],'price':int(pm.group(1).replace(',','')) if pm else 0,'city':city,'year':int(ym.group(1)) if ym else None,'url':f'https://haraj.com.sa/{id_}/','image_url':img_url})
-                  print(f'Page {page}: {len(seen)} listings total')
+                      href = a['href']
+                      id_m = re.search(r'haraj\.com\.sa/(\d{9,})', href)
+                      if not id_m:
+                          continue
+                      sid = id_m.group(1)
+                      img_tag = a.find('img')
+                      img_url = None
+                      if img_tag:
+                          src = img_tag.get('src') or img_tag.get('data-src') or ''
+                          if 'thumbcdn' in src:
+                              # Strip any existing suffix and add -400x400.webp
+                              src = re.sub(r'-\d+x\d+\.webp$', '', src)
+                              if not src.endswith('.webp'):
+                                  img_url = src + '-400x400.webp'
+                              else:
+                                  img_url = src
+                      title_el = a.find(class_=re.compile('title|name|heading', re.I))
+                      title = title_el.get_text(strip=True) if title_el else a.get_text(strip=True)[:80]
+                      rows.append({'source': 'haraj', 'source_id': sid, 'url': href, 'title': title, 'image_url': img_url})
               except Exception as e:
                   print(f'Page {page} error: {e}')
 
-          print(f'Upserting {len(all_listings)} listings...')
-          resp = requests.post(f'{SUPABASE_URL}/rest/v1/listings', json=all_listings, headers={'apikey':SUPABASE_KEY,'Authorization':f'Bearer {SUPABASE_KEY}','Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}, timeout=60)
-          print(f'Done: HTTP {resp.status_code}')
+          if rows:
+              import json
+              resp = requests.post(SB_URL + '/rest/v1/listings', headers=HEADERS, data=json.dumps(rows))
+              print(f'Upserted {len(rows)} rows, status {resp.status_code}')
           PYEOF
