@@ -1,1035 +1,1768 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Haraj Pro â Ø³ÙÙ Ø§ÙØ³ÙØ§Ø±Ø§Øª Ø§ÙØ°ÙÙ</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--accent:#3b82f6;--accent2:#10b981;--danger:#ef4444;--warning:#f59e0b;--text:#f1f5f9;--text2:#94a3b8;--border:#475569;--gold:#fbbf24;--great:#22c55e;--good:#3b82f6;--fair:#f59e0b;--poor:#ef4444}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
-a{color:var(--accent);text-decoration:none}
-.container{max-width:1400px;margin:0 auto;padding:0 20px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haraj Pro — سوق السيارات الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* Header */
-.header{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;z-index:100}
-.header-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.logo{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo span{font-size:14px;font-weight:400;color:var(--text2);-webkit-text-fill-color:var(--text2);margin-right:8px}
-.nav{display:flex;gap:8px}
-.nav-btn{padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:14px;transition:.2s}
-.nav-btn:hover,.nav-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1a202c;
+            --bg-tertiary: #2d3748;
+            --accent-gold: #f59e0b;
+            --accent-gold-light: #fbbf24;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+        }
 
-/* KPI Cards */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
-.kpi{background:var(--surface);border-radius:12px;padding:20px;border:1px solid var(--border)}
-.kpi-value{font-size:32px;font-weight:800;color:var(--accent)}
-.kpi-label{font-size:13px;color:var(--text2);margin-top:4px}
-.kpi-change{font-size:12px;margin-top:8px;padding:2px 8px;border-radius:99px;display:inline-block}
-.kpi-change.up{background:#22c55e22;color:var(--great)}
-.kpi-change.down{background:#ef444422;color:var(--danger)}
+        html, body {
+            height: 100%;
+            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
 
-/* Search & Filters */
-.search-section{margin:24px 0}
-.search-bar{display:flex;gap:12px;margin-bottom:16px}
-.search-input{flex:1;padding:14px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;direction:rtl}
-.search-input::placeholder{color:var(--text2)}
-.search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
-.filter-row{display:flex;gap:12px;flex-wrap:wrap}
-.filter-select{padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;min-width:140px;cursor:pointer}
-.filter-select:focus{outline:none;border-color:var(--accent)}
-.btn{padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:white;font-size:14px;cursor:pointer;font-weight:600;transition:.2s}
-.btn:hover{opacity:.9;transform:translateY(-1px)}
-.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
-.btn-success{background:var(--accent2)}
+        body {
+            overflow-x: hidden;
+        }
 
-/* Listings Grid */
-.listings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;margin:24px 0}
-.listing-card{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;transition:.3s;cursor:pointer;position:relative}
-.listing-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.card-badge{position:absolute;top:12px;left:12px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;z-index:2}
-.badge-great{background:#22c55e;color:white}
-.badge-good{background:var(--accent);color:white}
-.badge-fair{background:var(--warning);color:#000}
-.badge-poor{background:var(--surface2);color:var(--text2)}
-.card-img{width:100%;height:200px;background:linear-gradient(135deg,var(--surface2),var(--bg));display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--text2);overflow:hidden;position:relative}.card-img img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;border-radius:0}
-.card-body{padding:16px}
-.card-title{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4}
-.card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.meta-tag{padding:3px 10px;border-radius:6px;background:var(--bg);font-size:12px;color:var(--text2)}
-.card-price-row{display:flex;justify-content:space-between;align-items:center}
-.card-price{font-size:24px;font-weight:800;color:var(--accent2)}
-.card-fmv{font-size:13px;color:var(--text2)}
-.card-fmv .below{color:var(--great);font-weight:700}
-.card-fmv .above{color:var(--danger);font-weight:700}
-.deal-score-bar{height:6px;border-radius:3px;background:var(--bg);margin-top:12px;overflow:hidden}
-.deal-score-fill{height:100%;border-radius:3px;transition:.5s}
-.card-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--border)}
-.card-footer a{font-size:13px;font-weight:600}
+        /* Layout */
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-/* Skeleton shimmer + card entrance (from Cursor design system) */
-@keyframes shimmer{100%{transform:translateX(100%)}}
-@keyframes fade-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.skeleton-card{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;pointer-events:none}
-.skeleton-block{background:var(--surface2);border-radius:6px;position:relative;overflow:hidden}
-.skeleton-block::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:shimmer 1.5s infinite}
-a[data-scraped]{animation:fade-up .6s ease-out both}
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(to bottom, var(--bg-secondary), rgba(26, 32, 44, 0.95));
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
 
-/* Charts Section */
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
-.chart-box{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:20px}
-.chart-box h3{font-size:16px;margin-bottom:16px;color:var(--text2)}
-.chart-box canvas{max-height:300px}
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-/* Opportunities Section */
-.opp-header{display:flex;justify-content:space-between;align-items:center;margin:32px 0 16px}
-.opp-header h2{font-size:24px;font-weight:800}
-.opp-count{background:var(--accent2);color:white;padding:4px 14px;border-radius:99px;font-size:14px;font-weight:700}
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-decoration: none;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
 
-/* Detail Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;justify-content:center;align-items:center;padding:20px}
-.modal-overlay.active{display:flex}
-.modal{background:var(--surface);border-radius:20px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid var(--border)}
-.modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:start}
-.modal-close{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;padding:4px 8px}
-.modal-body{padding:20px}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
-.detail-item{background:var(--bg);padding:12px;border-radius:8px}
-.detail-label{font-size:12px;color:var(--text2);margin-bottom:4px}
-.detail-value{font-size:18px;font-weight:700}
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--bg-primary);
+        }
 
-/* Section Tabs */
-.section{display:none}
-.section.active{display:block}
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
 
-/* Table */
-.data-table{width:100%;border-collapse:collapse;margin:16px 0}
-.data-table th,.data-table td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border)}
-.data-table th{background:var(--bg);color:var(--text2);font-size:13px;font-weight:600;position:sticky;top:0;cursor:pointer}
-.data-table th:hover{color:var(--accent)}
-.data-table tr:hover{background:var(--surface2)}
-.table-wrap{overflow-x:auto;background:var(--surface);border-radius:16px;border:1px solid var(--border)}
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
 
-/* Footer */
-.footer{text-align:center;padding:32px;color:var(--text2);font-size:13px;border-top:1px solid var(--border);margin-top:40px}
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.1);
+        }
 
-/* Responsive */
-@media(max-width:768px){
-  .charts-grid{grid-template-columns:1fr}
-  .listings-grid{grid-template-columns:1fr}
-  .header-inner{flex-direction:column;align-items:stretch}
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  .filter-row{flex-direction:column}
-  .detail-grid{grid-template-columns:1fr}
-}
-/* Scrollbar */
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
 
-/* Auth & User Area */
-.user-area{display:flex;align-items:center;gap:12px;padding:8px}
-.auth-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:14px;font-weight:600;transition:.2s}
-.auth-btn:hover{background:var(--accent);color:white}
-.user-email{font-size:14px;color:var(--text2)}
-.fav-heart{cursor:pointer;font-size:20px;transition:.2s;display:inline-block}
-.fav-heart.favorited{color:var(--danger);transform:scale(1.1)}
-.fav-heart:hover{transform:scale(1.15)}
+        /* Sections */
+        section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
 
-/* Auth Modal */
-.auth-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;justify-content:center;align-items:center;padding:20px}
-.auth-modal.active{display:flex}
-.auth-modal-content{background:var(--surface);border-radius:20px;max-width:400px;width:100%;border:1px solid var(--border)}
-.auth-modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.auth-modal-body{padding:20px}
-.auth-form-group{margin-bottom:16px}
-.auth-form-group label{display:block;font-size:14px;margin-bottom:8px;color:var(--text2);font-weight:600}
-.auth-form-group input{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px}
-.auth-form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
-.auth-submit{width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-.auth-submit:hover{opacity:.9}
-.auth-tabs{display:flex;gap:12px;margin-bottom:20px;border-bottom:1px solid var(--border)}
-.auth-tab{padding:12px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:14px;font-weight:600;border-bottom:2px solid transparent;transition:.2s}
-.auth-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.auth-error{background:#ef444422;color:var(--danger);padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px}
-.auth-success{background:#22c55e22;color:var(--great);padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+        section.active {
+            display: block;
+        }
 
-/* Saved Searches */
-.save-search-area{display:flex;gap:8px;align-items:center}
-.save-search-btn{padding:10px 20px;background:var(--accent2);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-.save-search-btn:hover{opacity:.9}
-.saved-searches-dropdown{position:relative;min-width:180px}
-.saved-searches-select{width:100%;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;cursor:pointer}
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-/* Favorites Tab */
-#sec-favorites{display:none}
-#sec-favorites.active{display:block}
-</style>
+        /* Cards and Components */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        /* Forms */
+        .search-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        select {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-gold);
+        }
+
+        /* Filters */
+        .filters-container {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: block;
+            color: var(--text-primary);
+        }
+
+        .filter-label-small {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .opportunities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Listing Card */
+        .listing-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .listing-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .listing-card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .listing-card-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .listing-card-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .listing-card-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .listing-card-body {
+            padding: 1.25rem;
+            flex: 1;
+        }
+
+        .price-comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .price-label {
+            color: var(--text-secondary);
+        }
+
+        .price-value {
+            font-weight: 600;
+            color: var(--accent-gold);
+        }
+
+        .price-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .price-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--accent-gold));
+            border-radius: 4px;
+        }
+
+        .price-bar-fill.above-fmv {
+            background: linear-gradient(90deg, var(--warning), var(--danger));
+        }
+
+        .deal-score {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .deal-score-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .deal-score-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--accent-gold);
+        }
+
+        .deal-score-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-gold);
+        }
+
+        /* Opportunity Card */
+        .opportunity-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .opportunity-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .opportunity-header {
+            margin-bottom: 1rem;
+        }
+
+        .opportunity-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .opportunity-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .opportunity-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .opportunity-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .opportunity-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .opportunity-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .opportunity-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .opportunity-reason {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .opportunity-risk {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 0;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: var(--accent-gold);
+        }
+
+        .tab.active {
+            color: var(--accent-gold);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-gold);
+        }
+
+        /* Chip */
+        .chip {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .chip:hover,
+        .chip.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+        }
+
+        /* Loading */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Detail Page */
+        .detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .detail-header {
+            margin-bottom: 2rem;
+        }
+
+        .detail-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-meta-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-meta-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .detail-price-comparison {
+            margin-bottom: 2rem;
+        }
+
+        .comparison-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .comparison-bar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .comparison-bar-chart {
+            position: relative;
+            height: 60px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-bar-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-gold);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .comparison-bar-label {
+            position: absolute;
+            bottom: -1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transform: translateX(-50%);
+        }
+
+        .comparison-legend {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .comparison-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comparison-legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state-text {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .grid-2,
+            .grid-3,
+            .opportunities-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-panel {
+                position: static;
+            }
+
+            .detail-title {
+                font-size: 1.5rem;
+            }
+
+            .detail-meta {
+                gap: 1rem;
+            }
+
+            .opportunity-body {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+        }
+
+        /* Utility */
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .gap-3 { gap: 1.5rem; }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+    </style>
 </head>
 <body>
+    <div id="app">
+        <nav>
+            <div class="nav-container">
+                <a href="#/" class="nav-logo">
+                    <div class="nav-logo-icon">🚗</div>
+                    <div>Haraj Pro</div>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#/" class="nav-link">الرئيسية</a></li>
+                    <li><a href="#/search" class="nav-link">البحث</a></li>
+                    <li><a href="#/opportunities" class="nav-link">الفرص</a></li>
+                </ul>
+            </div>
+        </nav>
 
-<!-- Header -->
-<header class="header">
-<div class="container header-inner">
-  <div class="logo">Haraj Pro <span>Ø³ÙÙ Ø§ÙØ³ÙØ§Ø±Ø§Øª Ø§ÙØ°ÙÙ</span></div>
-  <nav class="nav">
-    <button class="nav-btn active" onclick="showSection('home')">Ø§ÙØ±Ø¦ÙØ³ÙØ©</button>
-    <button class="nav-btn" onclick="showSection('search')">Ø¨Ø­Ø«</button>
-    <button class="nav-btn" onclick="showSection('opportunities')">Ø§ÙÙØ±Øµ</button>
-    <button class="nav-btn" onclick="showSection('analytics')">Ø§ÙØªØ­ÙÙÙØ§Øª</button>
-    <button class="nav-btn" onclick="showSection('table')">Ø§ÙØ¬Ø¯ÙÙ</button>
-    <button class="nav-btn" id="favBtn" style="display:none" onclick="showSection('favorites')">â¤ï¸ Ø§ÙÙÙØ¶ÙØ©</button>
-  </nav>
-  <div class="user-area" id="userArea">
-    <button class="auth-btn" onclick="openAuthModal()">ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ</button>
-  </div>
-</div>
-</header>
+        <main>
+            <!-- Home Section -->
+            <section id="home" class="active">
+                <div class="detail-header">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">سوق السيارات الذكي</h1>
+                    <p style="color: var(--text-secondary); font-size: 1.125rem;">اكتشف أفضل صفقات السيارات في السعودية</p>
+                </div>
 
-<main class="container">
+                <div class="search-bar" style="margin-bottom: 2rem;">
+                    <input type="text" class="search-input" id="homeSearch" placeholder="ابحث عن ماركة أو موديل..." style="flex: 1; min-width: 300px;">
+                    <button class="btn btn-primary" onclick="navigateToSearch()">بحث متقدم</button>
+                </div>
 
-<!-- HOME SECTION -->
-<div id="sec-home" class="section active">
-  <div class="kpi-grid" id="kpiGrid"></div>
-  <div class="opp-header">
-    <h2>ð¥ Ø£ÙØ¶Ù Ø§ÙÙØ±Øµ</h2>
-    <span class="opp-count" id="oppCount"></span>
-  </div>
-  <div class="listings-grid" id="topDeals"></div>
-  <div class="charts-grid">
-    <div class="chart-box"><h3>ÙØªÙØ³Ø· Ø§ÙØ£Ø³Ø¹Ø§Ø± Ø­Ø³Ø¨ Ø§ÙÙØ§Ø±ÙØ©</h3><canvas id="chartBrand"></canvas></div>
-    <div class="chart-box"><h3>ØªÙØ²ÙØ¹ Ø§ÙØ³ÙØ§Ø±Ø§Øª Ø­Ø³Ø¨ Ø§ÙÙØ¯ÙÙØ©</h3><canvas id="chartCity"></canvas></div>
-  </div>
-</div>
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">البحث السريع</h2>
+                    <div class="search-bar" style="flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0;">
+                        <button class="chip" onclick="searchByBrand('Toyota')">تويوتا</button>
+                        <button class="chip" onclick="searchByBrand('Nissan')">نيسان</button>
+                        <button class="chip" onclick="searchByBrand('Hyundai')">هيونداي</button>
+                        <button class="chip" onclick="searchByBrand('BMW')">بي إم دبليو</button>
+                        <button class="chip" onclick="searchByBrand('Mercedes')">مرسيدس</button>
+                        <button class="chip" onclick="searchByBrand('Kia')">كيا</button>
+                        <button class="chip" onclick="searchByBrand('Ford')">فورد</button>
+                        <button class="chip" onclick="searchByBrand('Jeep')">جيب</button>
+                    </div>
+                </div>
 
-<!-- SEARCH SECTION -->
-<div id="sec-search" class="section">
-  <div class="search-section">
-    <div class="search-bar">
-      <input class="search-input" id="searchInput" placeholder="Ø§Ø¨Ø­Ø« Ø¹Ù Ø³ÙØ§Ø±Ø©... (ÙØ«Ø§Ù: ÙØ§ÙØ±Ù 2022)" oninput="applyFilters()">
+                <h2 style="font-size: 1.5rem; margin: 2rem 0 1rem;">الإحصائيات الرئيسية</h2>
+                <div class="kpi-grid" id="kpiCards">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p class="loading-text">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <h2 style="font-size: 1.5rem; margin: 2rem 0 1rem;">أفضل الفرص</h2>
+                <div class="opportunities-grid" id="topOpportunitiesGrid">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p class="loading-text">جاري التحميل...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search Section -->
+            <section id="search">
+                <h1 style="font-size: 2rem; margin-bottom: 1.5rem;">البحث عن السيارات</h1>
+
+                <div class="filters-container">
+                    <div class="filter-panel">
+                        <h3 style="font-size: 1.125rem; margin-bottom: 1.5rem;">الفلاتر</h3>
+
+                        <div class="filter-group">
+                            <label class="filter-label">الماركة</label>
+                            <select id="filterBrand" onchange="applyFilters()">
+                                <option value="">جميع الماركات</option>
+                                <option value="Toyota">تويوتا</option>
+                                <option value="Nissan">نيسان</option>
+                                <option value="Hyundai">هيونداي</option>
+                                <option value="BMW">بي إم دبليو</option>
+                                <option value="Mercedes">مرسيدس</option>
+                                <option value="Kia">كيا</option>
+                                <option value="Ford">فورد</option>
+                                <option value="Jeep">جيب</option>
+                                <option value="Other">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">المدينة</label>
+                            <select id="filterCity" onchange="applyFilters()">
+                                <option value="">جميع المدن</option>
+                                <option value="Riyadh">الرياض</option>
+                                <option value="Jeddah">جدة</option>
+                                <option value="Dammam">الدمام</option>
+                                <option value="Mecca">مكة</option>
+                                <option value="Medina">المدينة</option>
+                                <option value="Khobar">الخبر</option>
+                                <option value="Abha">أبها</option>
+                                <option value="Tabuk">تبوك</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">السنة</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <input type="number" id="yearMin" placeholder="من" onchange="applyFilters()" style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; color: var(--text-primary);">
+                                <input type="number" id="yearMax" placeholder="إلى" onchange="applyFilters()" style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; color: var(--text-primary);">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">السعر (ريال)</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <input type="number" id="priceMin" placeholder="من" onchange="applyFilters()" style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; color: var(--text-primary);">
+                                <input type="number" id="priceMax" placeholder="إلى" onchange="applyFilters()" style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; color: var(--text-primary);">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" id="opportunitiesOnly" onchange="applyFilters()">
+                                <span>الفرص المميزة فقط</span>
+                            </label>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">ترتيب حسب</label>
+                            <select id="sortBy" onchange="applyFilters()">
+                                <option value="deal_score">أفضل العروض</option>
+                                <option value="discount_pct">أعلى خصم</option>
+                                <option value="price_sar">السعر (الأقل)</option>
+                                <option value="year">السنة (الأحدث)</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;" onclick="resetFilters()">إعادة تعيين</button>
+                    </div>
+
+                    <div>
+                        <div id="searchResults" class="loading-container">
+                            <div class="spinner"></div>
+                            <p class="loading-text">جاري البحث...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Opportunities Section -->
+            <section id="opportunities">
+                <h1 style="font-size: 2rem; margin-bottom: 1rem;">فرص الاستثمار</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">اكتشف السيارات ذا֪ أفضل الفرص الاستثمارية</p>
+
+                <div class="tabs" id="opportunityTabs">
+                    <button class="tab active" onclick="filterOpportunitiesByType('all')">الكل</button>
+                    <button class="tab" onclick="filterOpportunitiesByType('great_deal')">صفقات ممتازة</button>
+                    <button class="tab" onclick="filterOpportunitiesByType('flip')">فرص استثمارية</button>
+                    <button class="tab" onclick="filterOpportunitiesByType('underpriced')">أقل من السوق</button>
+                    <button class="tab" onclick="filterOpportunitiesByType('urgent_seller')">بائعون مستعجلون</button>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-muted);">ملخص الفرص</h3>
+                    <div class="stats-grid" id="opportunityStats">
+                        <div class="stat-item">
+                            <div class="stat-label">إجمالي الفرص</div>
+                            <div class="stat-value">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">متوسط الخصم</div>
+                            <div class="stat-value">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">متوسط العائد</div>
+                            <div class="stat-value">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opportunities-grid" id="opportunitiesGrid">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p class="loading-text">جاري التحميل...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Listing Detail Section -->
+            <section id="listingDetail">
+                <a href="#/" class="back-button">← العودة</a>
+                <div class="detail-container" id="detailContent">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p class="loading-text">جاري التحميل...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-    <div class="filter-row">
-      <select class="filter-select" id="filterBrand" onchange="applyFilters()"><option value="">ÙÙ Ø§ÙÙØ§Ø±ÙØ§Øª</option></select>
-      <select class="filter-select" id="filterCity" onchange="applyFilters()"><option value="">ÙÙ Ø§ÙÙØ¯Ù</option></select>
-      <select class="filter-select" id="filterYear" onchange="applyFilters()"><option value="">ÙÙ Ø§ÙØ³ÙÙØ§Øª</option></select>
-      <select class="filter-select" id="filterGear" onchange="applyFilters()">
-        <option value="">ÙØ§ÙÙ Ø§ÙØ­Ø±ÙØ©</option><option value="A">Ø£ÙØªÙÙØ§ØªÙÙ</option><option value="M">Ø¹Ø§Ø¯Ù</option>
-      </select>
-      <select class="filter-select" id="filterSort" onchange="applyFilters()">
-        <option value="score">Ø§ÙØ£ÙØ¶Ù ØµÙÙØ©</option><option value="price_asc">Ø§ÙØ³Ø¹Ø±: Ø§ÙØ£ÙÙ</option><option value="price_desc">Ø§ÙØ³Ø¹Ø±: Ø§ÙØ£Ø¹ÙÙ</option><option value="year_desc">Ø§ÙØ£Ø­Ø¯Ø«</option><option value="year_asc">Ø§ÙØ£ÙØ¯Ù</option>
-      </select>
-      <button class="btn btn-outline" onclick="resetFilters()">ÙØ³Ø­ Ø§ÙÙÙØ§ØªØ±</button>
-    </div>
-    <div class="save-search-area" id="saveSearchArea" style="display:none">
-      <button class="save-search-btn" onclick="openSaveSearchDialog()">ð¾ Ø­ÙØ¸ Ø§ÙØ¨Ø­Ø«</button>
-      <div class="saved-searches-dropdown">
-        <select class="saved-searches-select" id="savedSearchesSelect" onchange="loadSavedSearch()">
-          <option value="">Ø§ÙØ¨Ø­ÙØ« Ø§ÙÙØ­ÙÙØ¸Ø©</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div id="resultCount" style="color:var(--text2);margin:12px 0;font-size:14px"></div>
-  <div class="listings-grid" id="searchResults"></div>
-</div>
 
-<!-- OPPORTUNITIES SECTION -->
-<div id="sec-opportunities" class="section">
-  <div class="opp-header">
-    <h2>ð ÙØ±Øµ Ø§ÙØ´Ø±Ø§Ø¡ â Ø£ÙÙ ÙÙ Ø³Ø¹Ø± Ø§ÙØ³ÙÙ</h2>
-    <span class="opp-count" id="oppCount2"></span>
-  </div>
-  <div class="listings-grid" id="oppGrid"></div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'https://jujqdxoybhkyzphztzcf.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
+        const { createClient } = window.supabase;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-<!-- ANALYTICS SECTION -->
-<div id="sec-analytics" class="section">
-  <div class="charts-grid" style="grid-template-columns:1fr">
-    <div class="chart-box"><h3>ØªØ­ÙÙÙ Ø§ÙØ£Ø³Ø¹Ø§Ø± Ø­Ø³Ø¨ Ø§ÙØ³ÙØ© ÙØ§ÙÙØ§Ø±ÙØ©</h3><canvas id="chartYearPrice"></canvas></div>
-  </div>
-  <div class="charts-grid">
-    <div class="chart-box"><h3>ÙÙØ§Ø· Ø§ÙØµÙÙØ§Øª â ÙÙ Ø§ÙÙÙØ§Ø¦Ù</h3><canvas id="chartScores"></canvas></div>
-    <div class="chart-box"><h3>Ø¹Ø¯Ø¯ Ø§ÙÙÙØ§Ø¦Ù Ø­Ø³Ø¨ Ø§ÙÙØ§Ø±ÙØ©</h3><canvas id="chartBrandCount"></canvas></div>
-  </div>
-</div>
-
-<!-- FAVORITES SECTION -->
-<div id="sec-favorites" class="section">
-  <h2 style="margin:24px 0 16px;font-size:20px">â¤ï¸ Ø§ÙÙÙØ¶ÙØ©</h2>
-  <div id="favoritesGrid" class="listings-grid"></div>
-</div>
-
-<!-- TABLE SECTION -->
-<div id="sec-table" class="section">
-  <h2 style="margin:24px 0 16px;font-size:20px">Ø¬Ø¯ÙÙ ÙÙ Ø§ÙÙÙØ§Ø¦Ù</h2>
-  <div class="table-wrap">
-    <table class="data-table" id="dataTable">
-      <thead><tr>
-        <th onclick="sortTable(0)">Ø§ÙÙØ§Ø±ÙØ©</th>
-        <th onclick="sortTable(1)">Ø§ÙØ¹ÙÙØ§Ù</th>
-        <th onclick="sortTable(2)">Ø§ÙØ³Ø¹Ø±</th>
-        <th onclick="sortTable(3)">Ø§ÙØ³ÙØ©</th>
-        <th onclick="sortTable(4)">Ø§ÙÙØ¯ÙÙØ©</th>
-        <th onclick="sortTable(5)">Ø§ÙÙØªÙØ¬Ø©</th>
-        <th>Ø±Ø§Ø¨Ø·</th>
-      </tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-</div>
-
-</main>
-
-<!-- Auth Modal -->
-<div class="auth-modal" id="authModal" onclick="if(event.target===this)closeAuthModal()">
-<div class="auth-modal-content">
-  <div class="auth-modal-header">
-    <h2 style="font-size:18px">ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ / Ø§ÙØªØ³Ø¬ÙÙ</h2>
-    <button class="modal-close" onclick="closeAuthModal()">â</button>
-  </div>
-  <div class="auth-modal-body">
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ</button>
-      <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">Ø¥ÙØ´Ø§Ø¡ Ø­Ø³Ø§Ø¨</button>
-    </div>
-    <div id="authMessage"></div>
-    <form id="authForm" onsubmit="handleAuthSubmit(event)">
-      <div class="auth-form-group">
-        <label>Ø§ÙØ¨Ø±ÙØ¯ Ø§ÙØ¥ÙÙØªØ±ÙÙÙ</label>
-        <input type="email" id="authEmail" required placeholder="your@email.com">
-      </div>
-      <div class="auth-form-group">
-        <label>ÙÙÙØ© Ø§ÙÙØ±ÙØ±</label>
-        <input type="password" id="authPassword" required placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" minlength="6">
-      </div>
-      <button type="submit" class="auth-submit" id="authSubmitBtn">ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ</button>
-    </form>
-  </div>
-</div>
-</div>
-
-<!-- Detail Modal -->
-<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-<div class="modal">
-  <div class="modal-header">
-    <h2 id="modalTitle" style="font-size:20px"></h2>
-    <button class="modal-close" onclick="closeModal()">â</button>
-  </div>
-  <div class="modal-body" id="modalBody"></div>
-</div>
-</div>
-
-<footer class="footer">
-  <p>Haraj Pro â Ø¨ÙØ§ÙØ§Øª ÙÙ haraj.com.sa ÙØ¹ Ø£Ø³Ø¹Ø§Ø± ÙØ±Ø¬Ø¹ÙØ© ÙÙ Syarah Ù SaudiSale</p>
-  <p style="margin-top:8px">ØªÙ Ø§ÙØªØ­Ø¯ÙØ«: ÙØ§Ø±Ø³ 2026 | Ø§ÙØ¨ÙØ§ÙØ§Øª ÙÙØ§Ø³ØªØ®Ø¯Ø§Ù Ø§ÙÙØ±Ø¬Ø¹Ù ÙÙØ·</p>
-</footer>
-
-<script>
-// === SUPABASE INIT ===
-const SUPABASE_URL = 'https://jujqdxoybhkyzphztzcf.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
-let supabase;
-try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch(e) {
-  console.warn('Supabase init failed:', e);
-  supabase = null;
-}
-
-let currentUser = null;
-let favorites = new Set();
-let savedSearches = [];
-let authMode = 'login';
-
-// === DATA ===
-const RAW_LISTINGS = [{"haraj_id": "11177135362", "brandAr": "ØªÙÙÙØªØ§", "brandEn": "Toyota", "title": "ÙØ§ÙÙÙØ³ 2015 ØºÙØ§Ø±ØªÙÙ", "price": "75000", "city": "ØªØ¨ÙÙ", "year": "2015", "mileage": "0", "fuel": "G", "gear": "M"}, {"haraj_id": "11177135243", "brandAr": "ØªÙÙÙØªØ§", "brandEn": "Toyota", "title": "Ø³ÙØ§Ø±Ø© ÙØ±Ø³ÙØ¯Ø§ ÙÙØ¯ÙÙ 92 Ø§ÙØ­Ø§ÙØ© ÙÙØªØ§Ø²Ø© ÙÙØ­ÙØµØ© Ø§Ø³ØªÙØ§Ø±Ø© Ø³ÙØªÙÙ", "price": "9000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "1992", "mileage": "0", "fuel": "G", "gear": "M"}, {"haraj_id": "11177135257", "brandAr": "ÙÙØ³Ø§Ù", "brandEn": "Nissan", "title": "ÙÙØ³Ø§Ù 84", "price": "23000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "1984", "mileage": "0", "fuel": "G", "gear": "M"}, {"haraj_id": "11177135197", "brandAr": "ÙÙØ³Ø§Ù", "brandEn": "Nissan", "title": "ÙÙØ³Ø§Ù Ø¨Ø§ØªØ±ÙÙ Ø¨ÙØ§ØªÙÙÙÙÙ ØªÙÙØ³ Ø·Ø¨ÙØ¹Ù2026 Ø³Ø¹ÙØ¯Ù ÙÙ Ø§ÙØ§ÙÙØ§Ù", "price": "339250", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2026", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134930", "brandAr": "ÙÙØ³Ø§Ù", "brandEn": "Nissan", "title": "ÙÙØ³Ø§Ù Ø§ÙØ³ØªØ±ÙÙ 2016 - ÙØµ ÙÙ", "price": "40000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2016", "mileage": "199000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134852", "brandAr": "ÙÙØ³Ø§Ù", "brandEn": "Nissan", "title": "ØµÙÙ 2016 Ø§ÙØ­Ø¯ 17 Ø§ÙÙ", "price": "17000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2016", "mileage": "0", "fuel": "", "gear": "A"}, {"haraj_id": "11177134574", "brandAr": "ÙÙØ³Ø§Ù", "brandEn": "Nissan", "title": "Ø¯Ø¯Ø³Ù 2010", "price": "20000", "city": "Ø§ÙØ·Ø§ÙÙ", "year": "2010", "mileage": "300000", "fuel": "G", "gear": "M"}, {"haraj_id": "11177061188", "brandAr": "ÙÙÙÙØ¯Ø§Ù", "brandEn": "Hyundai", "title": "ÙÙÙÙØ¯Ø§Ù Ø¨Ø§ÙÙØ³ÙØ¯ ÙØ§ÙÙØºØ±Ø§ÙÙ 2026", "price": "188000", "city": "Ø§ÙØ¨Ø­Ø±ÙÙ", "year": "2026", "mileage": "4000", "fuel": "G", "gear": "A"}, {"haraj_id": "11175555797", "brandAr": "ÙÙÙÙØ¯Ø§Ù", "brandEn": "Hyundai", "title": "ÙÙÙÙØ¯Ø§Ù Ø¥ÙÙØªØ±Ø§ 2014", "price": "25000", "city": "Ø¬Ø¯Ù", "year": "2014", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134937", "brandAr": "ÙÙÙØ¯Ø§", "brandEn": "Honda", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX Ø³ØªØ§ÙØ¯Ø± Ø³Ø¹ÙØ¯Ù 2025 Ø¹Ø±Ø¶ Ø®Ø§Øµ", "price": "114000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133719", "brandAr": "ÙÙÙØ¯Ø§", "brandEn": "Honda", "title": "ÙÙÙØ¯Ø§ Ø¨Ø§ÙÙÙØª 2021", "price": "110000", "city": "Ø¬Ø¯Ù", "year": "2021", "mileage": "50000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132761", "brandAr": "ÙÙÙØ¯Ø§", "brandEn": "Honda", "title": "Ø§ÙÙØ±Ø¯ 2017", "price": "51000", "city": "Ø§ÙØ·Ø§ÙÙ", "year": "2017", "mileage": "265000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134707", "brandAr": "Ø´ÙÙØ±ÙÙÙÙ", "brandEn": "Chevrolet", "title": "Ø£ÙØ±Ø¨Ø§Ù ÙØ±ÙØ² 2025", "price": "75000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2025", "mileage": "2000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132757", "brandAr": "Ø´ÙÙØ±ÙÙÙÙ", "brandEn": "Chevrolet", "title": "Ø¬ÙØ³ Ø¨Ø§ÙØ¨ÙØ¯ 2003", "price": "6000", "city": "Ø£Ø¨ÙØ§", "year": "2003", "mileage": "253000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132728", "brandAr": "Ø´ÙÙØ±ÙÙÙÙ", "brandEn": "Chevrolet", "title": "Ø´ÙÙØ±ÙÙÙÙ Ø§ÙØ¨Ø§ÙØ§ 2015", "price": "28000", "city": "Ø¬Ø¯Ù", "year": "2015", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133732", "brandAr": "ÙÙØ²Ø³", "brandEn": "Lexus", "title": "ÙÙØ²Ø³ 350 -2007 ÙÙØ¨ÙØ¹", "price": "46000", "city": "Ø¬Ø¯Ù", "year": "2007", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134985", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "ÙÙØ§ Ø³ÙÙØªÙØ³ ÙÙØ¯ÙÙ 2025 Ø³ØªØ§ÙØ¯Ø± ÙØ·ÙØ±", "price": "71500", "city": "Ø¬Ø¯Ù", "year": "2025", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134975", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "ÙÙØ§ K5ÙØµ ÙÙ GLS ÙÙÙÙ Ø§ÙØ£ÙÙÙØ© 2026 Ø§ÙÙ Ø³Ø¹Ø±", "price": "113850", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2026", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134583", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "ÙÙØ§ Ø±ÙÙ ÙØ§ØªØ´Ø¨Ø§Ù", "price": "30000", "city": "ÙÙØ¨Ø¹", "year": "2014", "mileage": "235000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133654", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "Ø§ÙØ¨ØªÙÙØ§ ÙÙØ¨ÙØ¹", "price": "20000", "city": "Ø­ÙØ± Ø§ÙØ¨Ø§Ø·Ù", "year": "2015", "mileage": "80000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133649", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "K8 2022 ( Ø¨ÙØ²ÙÙ V6 ) Ø¨Ø­Ø§ÙØ© Ø§ÙÙÙØ§ÙØ© ÙÙ ÙØ§ÙÙ", "price": "91500", "city": "Ø¬Ø¯Ù", "year": "2022", "mileage": "108000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133604", "brandAr": "ÙÙØ§", "brandEn": "Kia", "title": "ÙÙØ§ Ø³Ø±Ø§ØªÙ Kia", "price": "28000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2019", "mileage": "120000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177135279", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "ÙÙØ±Ø¯ ØªÙØ±ÙØªÙØ±Ù Ø§Ø³ØªØ§ÙØ¯Ø± Ø§ÙØ¨ÙØ§ÙØªÙ2026", "price": "96000", "city": "Ø¬Ø¯Ù", "year": "2026", "mileage": "0", "fuel": "", "gear": ""}, {"haraj_id": "11177135065", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "ÙÙØ±Ø¯ f150", "price": "54000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2019", "mileage": "164000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177135054", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "Ø§ÙØ³Ø¨Ø¯ÙØ´Ù 2012 XL Ø¯Ø¨Ù", "price": "25000", "city": "ÙÙØ¨Ø¹", "year": "2012", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134832", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "ØªÙØ±Ø³ 2022", "price": "79000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2022", "mileage": "150000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134514", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "Ford figo 2019", "price": "23000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2019", "mileage": "132000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134454", "brandAr": "ÙÙØ±Ø¯", "brandEn": "Ford", "title": "ØªÙØ±Ø³ ØªÙØªØ§ÙÙÙÙ ÙØ³ØªØ®Ø¯Ù 24 Ø§ÙØ¯ÙØ¹Ø© Ø§ÙØ«Ø§ÙÙØ©", "price": "110000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2024", "mileage": "56000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134500", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ CLE200 2025 ÙØ´Ù", "price": "275000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "9000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134401", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ Ø¨ÙØ² 2002-s320 Ø­Ø§ÙØ© ÙÙØªØ§Ø²Ø© Ø¹Ø¯Ø§Ø¯.. 62Ø£ÙÙ ÙØ®Ø²ÙØ© Ø¬ÙØ§ÙÙ", "price": "35000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2002", "mileage": "62000", "fuel": "", "gear": ""}, {"haraj_id": "11177133555", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ ÙØ®Øª ÙÙØ¨ÙØ¹ 2018 S560 Ø¨Ø­Ø§ÙØ© Ø§ÙÙÙØ§ÙØ© 6 Ø§Ø²Ø±Ø§Ø±", "price": "195000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2018", "mileage": "98000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132720", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯ÙØ³", "price": "80000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2015", "mileage": "160000", "fuel": "H", "gear": "A"}, {"haraj_id": "11177132599", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "Mercedes-Benz CLE 4MATIC ÙÙØ¨ÙÙ 2026", "price": "266000", "city": "ØªØ¨ÙÙ", "year": "2026", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132149", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ 25 C200 Ø¨Ø­Ø§ÙØ© Ø§ÙÙÙØ§ÙØ©", "price": "250000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "15000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177131693", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ E450 ÙÙØ¯ÙÙ 2024 Ø§Ø³ØªÙØ±Ø§Ø¯ ÙÙ ÙÙØ±ÙØ§", "price": "271000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2024", "mileage": "41000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177131631", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "Mercedes Benz E400 (2017)", "price": "128000", "city": "Ø¬Ø¯Ù", "year": "2017", "mileage": "180000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177131077", "brandAr": "ÙØ±Ø³ÙØ¯Ø³", "brandEn": "Mercedes", "title": "ÙØ±Ø³ÙØ¯Ø³ E300 AMG ÙÙØ¯ÙÙ 2026 Ø§Ø³ØªÙØ±Ø§Ø¯ ÙÙ ÙÙØ±ÙØ§", "price": "291000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2026", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177131786", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "Ø¨Ù Ø§Ù x6 3.5i 2010", "price": "25000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2010", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177129051", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ 760LI 2018", "price": "135000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2018", "mileage": "94000", "fuel": "", "gear": "A"}, {"haraj_id": "11177128778", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "bmw x5 2001 v8 ÙÙØ¨ÙØ¹", "price": "12000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2001", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177128335", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "2025 BMW X7 xDrive40i", "price": "269723", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "84000", "fuel": "", "gear": "A"}, {"haraj_id": "11177127808", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "2021 Ø¨Ù Ø¥Ù Ø¯Ø¨ÙÙÙ ÙØ¦Ø© 4", "price": "127000", "city": "Ø¬Ø¯Ù", "year": "2021", "mileage": "84000", "fuel": "", "gear": "A"}, {"haraj_id": "11177127698", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ M2 2025", "price": "335000", "city": "Ø¬Ø¯Ù", "year": "2025", "mileage": "9000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177127323", "brandAr": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ", "brandEn": "BMW", "title": "2025 BMW M5 Base", "price": "442698", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "10000", "fuel": "", "gear": "A"}, {"haraj_id": "11177133965", "brandAr": "Ø¬Ù Ø§Ù Ø³Ù", "brandEn": "GMC", "title": "Ø¬ÙØ³ ÙÙØ¯ÙÙ 2000", "price": "10000", "city": "Ø¬Ø¯Ù", "year": "2000", "mileage": "1000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177132935", "brandAr": "Ø¬Ù Ø§Ù Ø³Ù", "brandEn": "GMC", "title": "ÙÙÙÙ GMC 2005 Ø¯Ø¨Ù ÙÙØ´Ù Ø§ÙØ³ÙØ§Ø±Ø© 541 Ø±Ø´ÙØ´ ÙØªÙØ±ÙØ©", "price": "18000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2005", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177129843", "brandAr": "Ø¬Ù Ø§Ù Ø³Ù", "brandEn": "GMC", "title": "Ø¬ÙØ³ Ø³ÙÙØ±Ø§ 2500 ÙÙØ¯ÙÙ 1998 ÙÙØ± Ø¹Ø§Ø¯Ù Ø¯Ø¨Ù", "price": "31000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "1998", "mileage": "203000", "fuel": "G", "gear": "M"}, {"haraj_id": "11177127512", "brandAr": "Ø¯ÙØ¯Ø¬", "brandEn": "Dodge", "title": "Ø±Ø§Ù 2015 Ø¯Ø¨Ù", "price": "52000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2015", "mileage": "0", "fuel": "G", "gear": ""}, {"haraj_id": "11177127078", "brandAr": "Ø¯ÙØ¯Ø¬", "brandEn": "Dodge", "title": "Ø¯ÙØ¬ ØªØ´Ø§Ø±Ø¬Ø± 2016", "price": "40000", "city": "Ø¹Ø±Ø¹Ø±", "year": "2016", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134974", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ Ø±ÙØ¨ÙÙÙÙ 2025 Ø®ÙÙØ¬Ù Ø§ØµÙØ§Ø± ÙØ¹ Ø¶ÙØ§Ù", "price": "251999", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133886", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø±Ø§ÙØ¬ÙØ± Ø£Ø¹ÙÙ ÙØ¦Ø© Ø±ÙØ¨ÙÙÙ V6 ÙØ¸ÙÙ Ø¬Ø¯Ø§Ù", "price": "135000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2020", "mileage": "115000", "fuel": "G", "gear": ""}, {"haraj_id": "11177125798", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø¬Ø±Ø§ÙØ¯ Ø´ÙØ±ÙÙÙ 2022 ÙÙÙØ²", "price": "136000", "city": "Ø¬Ø¯Ù", "year": "2022", "mileage": "94000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177123209", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø¬ÙØ§Ø¯ÙØªÙØ± Ø±ÙØ¨ÙÙÙÙ Ø¥ØµØ¯Ø§Ø± Ø®Ø§Øµ 1 ÙÙ 300 ÙØ³Ø®Ø© ÙÙØ§ÙØ© Ø¹ÙÙ Ø§ÙØ¶ÙØ§Ù", "price": "145000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2020", "mileage": "77000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177119492", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø³Ø¨ÙØ±Øª Ø§2018 ÙØ¹Ø¯Ù", "price": "110000", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2018", "mileage": "208000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134688", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "2026 Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ Ø±ÙØ¨ÙÙÙÙ 3.6L V6 Ø®ÙÙØ¬Ù Ø¶ÙØ§Ù Ø§ÙÙÙÙÙ", "price": "299999", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2026", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177133072", "brandAr": "Ø¬ÙØ¨", "brandEn": "Jeep", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ Ø³Ø¨ÙØ±Øª Ø§Ø³ 2025 Ø®ÙÙØ¬Ù Ø§ØµÙØ§Ø± ÙØ¹ Ø¶ÙØ§Ù", "price": "177999", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2025", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177134639", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "ÙÙØªØ³ÙØ¨ÙØ´Ù 2024 L200 ÙÙ ÙØ§ÙÙ GLS Ø§ÙÙ Ø³Ø¹Ø±", "price": "108675", "city": "Ø§ÙØ±ÙØ§Ø¶", "year": "2024", "mileage": "0", "fuel": "D", "gear": "A"}, {"haraj_id": "11177134289", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "Ø¬ÙØ¨ Ø¨Ø§Ø¬ÙØ±Ù ÙØ®Ø²Ù 2014", "price": "38000", "city": "Ø¬Ø¯Ù", "year": "2014", "mileage": "111000", "fuel": "", "gear": ""}, {"haraj_id": "11177134285", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "ÙÙØ¨ÙØ¹ ÙÙÙØªÙØ±Ù Ø³Ø¨ÙØ±Øª ÙÙ ÙØ§ÙÙ ÙÙØ§ÙÙ ÙÙØ§ÙÙ", "price": "140000", "city": "Ø§ÙØ´Ø±ÙÙÙ", "year": "2025", "mileage": "0", "fuel": "G", "gear": "A"}, {"haraj_id": "11177129867", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "2016 Mitsubishi Pajero", "price": "37000", "city": "ØªØ¨ÙÙ", "year": "2016", "mileage": "300000", "fuel": "G", "gear": "A"}, {"haraj_id": "11177124837", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "ÙÙØªØ³ÙØ¨ÙØ´Ù 2021 Ø¨ÙØ²ÙÙ", "price": "45000", "city": "ÙÙØ¨Ø¹", "year": "2021", "mileage": "51000", "fuel": "G", "gear": "M"}, {"haraj_id": "11177123364", "brandAr": "ÙÙØªØ³ÙØ¨ÙØ´Ù", "brandEn": "Mitsubishi", "title": "ÙØªØ³ÙØ¨ÙØ´Ù ÙØ§ÙÙØ§ 2005 ØªÙÙØ§ØªÙÙ", "price": "10000", "city": "Ø­ÙØ± Ø§ÙØ¨Ø§Ø·Ù", "year": "2005", "mileage": "300000", "fuel": "G", "gear": "A"}];
-const MARKET_PRICES = [{"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2021", "price": "65400", "mileage": "74589", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE HEV 2021"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2023", "price": "79500", "mileage": "66310", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2023"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2022", "price": "77100", "mileage": "103581", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE HEV 2022"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2024", "price": "77400", "mileage": "86183", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2024"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2025", "price": "96900", "mileage": "62991", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù E HEV 2025"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2024", "price": "77100", "mileage": "57685", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2024"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2024", "price": "77700", "mileage": "74803", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2024"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2024", "price": "79400", "mileage": "63195", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2024"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2021", "price": "61600", "mileage": "112123", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2021"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2021", "price": "61500", "mileage": "131893", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2021"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2023", "price": "71500", "mileage": "133773", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2023"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2022", "price": "65200", "mileage": "160571", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE HEV 2022"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2024", "price": "82800", "mileage": "73009", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE HEV 2024"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2022", "price": "69700", "mileage": "160725", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2022"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2025", "price": "106000", "mileage": "11944", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù LE 2025"}, {"source": "syarah", "brand": "Toyota", "model": "Camry", "year": "2022", "price": "96000", "mileage": "143753", "title": "ØªÙÙÙØªØ§ ÙØ§ÙØ±Ù Ø¬Ø±Ø§ÙØ¯Ù 2022"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2022", "price": "77900", "mileage": "172887", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX 2022"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2022", "price": "76900", "mileage": "124676", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX Sport 2022"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2019", "price": "63400", "mileage": "170896", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX Sport 2019"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2022", "price": "78500", "mileage": "184232", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX L 2022"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2020", "price": "78500", "mileage": "75287", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX Sport 2020"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2025", "price": "116035", "mileage": "0", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX 2025"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2025", "price": "115575", "mileage": "0", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX 2025"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2019", "price": "78500", "mileage": "142923", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX 2019"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2025", "price": "131100", "mileage": "0", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX L 2025"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2022", "price": "89500", "mileage": "45166", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX 2022"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2025", "price": "104000", "mileage": "15956", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ LX 2025"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2023", "price": "104000", "mileage": "44522", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX 2023"}, {"source": "syarah", "brand": "Honda", "model": "Accord", "year": "2024", "price": "127000", "mileage": "29784", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ EX-L HEV 2024"}, {"source": "syarah", "brand": "Mercedes", "model": "E-Class", "year": "2022", "price": "236000", "mileage": "72305", "title": "ÙØ±Ø³ÙØ¯Ø³ E 200 2022"}, {"source": "syarah", "brand": "Mercedes", "model": "GLE-Class", "year": "2024", "price": "426000", "mileage": "7952", "title": "ÙØ±Ø³ÙØ¯Ø³ GLE 400 2024"}, {"source": "syarah", "brand": "Mercedes", "model": "GLE-Class", "year": "2023", "price": "306000", "mileage": "31000", "title": "ÙØ±Ø³ÙØ¯Ø³ GLE 450 2023"}, {"source": "syarah", "brand": "Mercedes", "model": "GLC-Class", "year": "2024", "price": "326000", "mileage": "9705", "title": "ÙØ±Ø³ÙØ¯Ø³ GLC 200 2024"}, {"source": "syarah", "brand": "Mercedes", "model": "S-Class", "year": "2023", "price": "606000", "mileage": "39071", "title": "ÙØ±Ø³ÙØ¯Ø³ Ø§Ø³ ÙÙØ§Ø³ 450 2023"}, {"source": "syarah", "brand": "Mercedes", "model": "GLC-Class", "year": "2023", "price": "296000", "mileage": "28409", "title": "ÙØ±Ø³ÙØ¯Ø³ GLC 200 2023"}, {"source": "syarah", "brand": "Mercedes", "model": "GLC-Class", "year": "2020", "price": "114000", "mileage": "130343", "title": "ÙØ±Ø³ÙØ¯Ø³ GLC 200 2020"}, {"source": "syarah", "brand": "Mercedes", "model": "S-Class", "year": "2021", "price": "285000", "mileage": "95295", "title": "ÙØ±Ø³ÙØ¯Ø³ Ø§Ø³ ÙÙØ§Ø³ 450 2021"}, {"source": "syarah", "brand": "Mercedes", "model": "E-Class", "year": "2021", "price": "124000", "mileage": "101872", "title": "ÙØ±Ø³ÙØ¯Ø³ E 200 2021"}, {"source": "syarah", "brand": "Mercedes", "model": "E-Class", "year": "2021", "price": "160000", "mileage": "82578", "title": "ÙØ±Ø³ÙØ¯Ø³ E 250 2021"}, {"source": "syarah", "brand": "Mercedes", "model": "G-Class", "year": "2021", "price": "405000", "mileage": "122119", "title": "ÙØ±Ø³ÙØ¯Ø³ Ø¬Ù ÙÙØ§Ø³ 63 2021"}, {"source": "syarah", "brand": "Mercedes", "model": "E-Class", "year": "2025", "price": "240000", "mileage": "4966", "title": "ÙØ±Ø³ÙØ¯Ø³ E 200 2025"}, {"source": "syarah", "brand": "BMW", "model": "5 Series", "year": "2023", "price": "113000", "mileage": "87127", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ®Ø§ÙØ³Ø© 520i 2023"}, {"source": "syarah", "brand": "BMW", "model": "X2", "year": "2021", "price": "64800", "mileage": "93147", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 2 2021"}, {"source": "syarah", "brand": "BMW", "model": "X1", "year": "2022", "price": "70600", "mileage": "61124", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 1 2022"}, {"source": "syarah", "brand": "BMW", "model": "7 Series", "year": "2022", "price": "251000", "mileage": "56846", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 730Li 2022"}, {"source": "syarah", "brand": "BMW", "model": "7 Series", "year": "2018", "price": "140000", "mileage": "72659", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 730Li 2018"}, {"source": "syarah", "brand": "BMW", "model": "5 Series", "year": "2024", "price": "286000", "mileage": "15534", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ®Ø§ÙØ³Ø© 520i 2024"}, {"source": "syarah", "brand": "BMW", "model": "X7", "year": "2024", "price": "406000", "mileage": "10651", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 7 2024"}, {"source": "syarah", "brand": "BMW", "model": "7 Series", "year": "2021", "price": "210000", "mileage": "80000", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 730Li 2021"}, {"source": "syarah", "brand": "BMW", "model": "X5", "year": "2018", "price": "115000", "mileage": "147704", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 5 2018"}, {"source": "syarah", "brand": "BMW", "model": "8 Series", "year": "2022", "price": "326000", "mileage": "17244", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ«Ø§ÙÙØ© M850i 2022"}, {"source": "syarah", "brand": "BMW", "model": "7 Series", "year": "2024", "price": "375000", "mileage": "4759", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 735i 2024"}, {"source": "syarah", "brand": "BMW", "model": "7 Series", "year": "2026", "price": "475000", "mileage": "579", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 735i 2026"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2020", "price": "105100", "mileage": "60344", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø³Ø¨ÙØ±Øª 2020"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2021", "price": "132000", "mileage": "52743", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ Ø³Ø¨ÙØ±Øª 2021"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2021", "price": "98500", "mileage": "92513", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø³Ø¨ÙØ±Øª 2021"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2022", "price": "139000", "mileage": "117113", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± ØµØ­Ø§Ø±Ù 2022"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2023", "price": "155000", "mileage": "50979", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± ØµØ­Ø§Ø±Ù 2023"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2021", "price": "165000", "mileage": "32817", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ ØµØ­Ø§Ø±Ù 2021"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2021", "price": "145000", "mileage": "157000", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ ØµØ­Ø§Ø±Ù 2021"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2022", "price": "170000", "mileage": "40487", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø§ÙÙÙØªØ¯ ØµØ­Ø§Ø±Ù 2022"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2020", "price": "114000", "mileage": "112419", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø³Ø¨ÙØ±Øª 2020"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2018", "price": "82500", "mileage": "87198", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± ÙÙÙÙØ³ 2018"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2018", "price": "83000", "mileage": "84763", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± JK 2018"}, {"source": "syarah", "brand": "Jeep", "model": "Wrangler", "year": "2018", "price": "124000", "mileage": "62983", "title": "Ø¬ÙØ¨ Ø±Ø§ÙØ¬ÙØ± ØµØ­Ø§Ø±Ù 2018"}, {"source": "syarah", "brand": "Kia", "model": "Seltos", "year": "2023", "price": "58000", "mileage": "71026", "title": "ÙÙØ§ Ø³ÙÙØªÙØ³ LX 2023"}, {"source": "syarah", "brand": "Kia", "model": "Cerato", "year": "2023", "price": "48000", "mileage": "102818", "title": "ÙÙØ§ Ø³ÙØ±Ø§ØªÙ L 2023"}, {"source": "syarah", "brand": "Kia", "model": "Sportage", "year": "2023", "price": "66500", "mileage": "169118", "title": "ÙÙØ§ Ø³Ø¨ÙØ±ØªØ§Ø¬ LX 2023"}, {"source": "syarah", "brand": "Kia", "model": "Seltos", "year": "2023", "price": "57000", "mileage": "73876", "title": "ÙÙØ§ Ø³ÙÙØªÙØ³ LX 2023"}, {"source": "syarah", "brand": "Kia", "model": "Seltos", "year": "2023", "price": "60000", "mileage": "70140", "title": "ÙÙØ§ Ø³ÙÙØªÙØ³ LX 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2023", "price": "36500", "mileage": "91155", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2023", "price": "36000", "mileage": "116976", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2023", "price": "34500", "mileage": "140628", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2023", "price": "34000", "mileage": "100405", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2023", "price": "35000", "mileage": "91794", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2023"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2022", "price": "31900", "mileage": "131633", "title": "ÙÙØ³Ø§Ù ØµÙÙ 2022"}, {"source": "syarah", "brand": "Nissan", "model": "Sunny", "year": "2020", "price": "30500", "mileage": "114359", "title": "ÙÙØ³Ø§Ù ØµÙÙ SV 2020"}, {"source": "syarah", "brand": "Nissan", "model": "X-Trail", "year": "2022", "price": "60000", "mileage": "150642", "title": "ÙÙØ³Ø§Ù Ø£ÙØ³ ØªØ±ÙÙ 2022"}, {"source": "syarah", "brand": "Nissan", "model": "Xterra", "year": "2021", "price": "75000", "mileage": "166817", "title": "ÙÙØ³Ø§Ù Ø§ÙØ³ØªÙØ±Ø§ 2021"}, {"source": "syarah", "brand": "Nissan", "model": "Xterra", "year": "2023", "price": "84700", "mileage": "59086", "title": "ÙÙØ³Ø§Ù Ø§ÙØ³ØªÙØ±Ø§ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Taurus", "year": "2023", "price": "71100", "mileage": "136708", "title": "ÙÙØ±Ø¯ ØªÙØ±Ø³ ØªÙØªØ§ÙÙÙÙ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Taurus", "year": "2021", "price": "59200", "mileage": "110510", "title": "ÙÙØ±Ø¯ ØªÙØ±Ø³ SE 2021"}, {"source": "syarah", "brand": "Ford", "model": "Taurus", "year": "2023", "price": "86200", "mileage": "112260", "title": "ÙÙØ±Ø¯ ØªÙØ±Ø³ ØªØ±ÙØ¯ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Taurus", "year": "2022", "price": "71000", "mileage": "99272", "title": "ÙÙØ±Ø¯ ØªÙØ±Ø³ Ø§ÙØ¨ÙØ§ÙØªÙ 2022"}, {"source": "syarah", "brand": "Ford", "model": "Taurus", "year": "2023", "price": "98500", "mileage": "131301", "title": "ÙÙØ±Ø¯ ØªÙØ±Ø³ ØªÙØªØ§ÙÙÙÙ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2024", "price": "75500", "mileage": "140537", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù Ø§ÙØ¨ÙØ§ÙØªÙ 2024"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2025", "price": "84000", "mileage": "41092", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù Ø§ÙØ¨ÙØ§ÙØªÙ 2025"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2024", "price": "78600", "mileage": "76461", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù Ø§ÙØ¨ÙØ§ÙØªÙ 2024"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2023", "price": "84000", "mileage": "35788", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù ØªÙØªØ§ÙÙÙÙ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2023", "price": "83100", "mileage": "71944", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù ØªØ±ÙØ¯ 2023"}, {"source": "syarah", "brand": "Ford", "model": "Territory", "year": "2024", "price": "83500", "mileage": "41860", "title": "ÙÙØ±Ø¯ ØªØ±ÙØªÙØ±Ù ØªØ±ÙØ¯ 2024"}, {"source": "syarah", "brand": "Ford", "model": "F-150", "year": "2023", "price": "107800", "mileage": "158099", "title": "ÙÙØ±Ø¯ F150 XL 2023"}, {"source": "saudisale", "brand": "BMW", "model": "7 Series", "year": "2024", "price": "335000", "mileage": "48000", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³Ø§Ø¨Ø¹Ø© 740i 2024"}, {"source": "saudisale", "brand": "BMW", "model": "X5", "year": "2020", "price": "209000", "mileage": "144000", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 5 Ø¥Ù ÙÙÙØ¨ÙØªÙØ´Ù 2020"}, {"source": "saudisale", "brand": "BMW", "model": "X7", "year": "2019", "price": "219000", "mileage": "92000", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ³ 7 2019"}, {"source": "saudisale", "brand": "Jeep", "model": "Wrangler", "year": "2025", "price": "255000", "mileage": "0", "title": "Ø¬ÙÙØ¨ Ø±Ø§ÙØ¬ÙØ± Ø±Ø¨ÙÙÙÙ 2025"}, {"source": "saudisale", "brand": "Dodge", "model": "Ram", "year": "2025", "price": "149000", "mileage": "0", "title": "Ø¯ÙØ¯Ø¬ Ø±Ø§Ù 1500 Ø¨ÙØ¬ ÙÙØ±Ù 2025"}, {"source": "saudisale", "brand": "Honda", "model": "Accord", "year": "2025", "price": "122450", "mileage": "0", "title": "ÙÙÙØ¯Ø§ Ø§ÙÙØ±Ø¯ Ø§Ù Ø§ÙØ³ 2025"}, {"source": "saudisale", "brand": "Kia", "model": "Seltos", "year": "2026", "price": "81500", "mileage": "0", "title": "ÙÙØ§ Ø³ÙÙØªÙØ³ 2026"}, {"source": "saudisale", "brand": "Kia", "model": "Sportage", "year": "2024", "price": "92500", "mileage": "0", "title": "ÙÙØ§ Ø³Ø¨ÙØ±ØªØ¬ 2024"}, {"source": "saudisale", "brand": "BMW", "model": "5 Series", "year": "2024", "price": "225000", "mileage": "11000", "title": "Ø¨Ù Ø§Ù Ø¯Ø¨ÙÙÙ Ø§ÙÙØ¦Ø© Ø§ÙØ®Ø§ÙØ³Ø© 520i 2024"}];
-
-// === FMV ENGINE ===
-function calcFMV(listing) {
-  const brand = listing.brandEn;
-  const year = parseInt(listing.year);
-  const price = parseInt(listing.price);
-  if (!brand || !year || !price || price < 1000) return null;
-
-  // Method 1: Market reference
-  const refs = MARKET_PRICES.filter(m => 
-    m.brand.toLowerCase() === brand.toLowerCase() && 
-    Math.abs(parseInt(m.year) - year) <= 2
-  );
-  let refPrice = null;
-  if (refs.length > 0) {
-    const prices = refs.map(r => parseInt(r.price));
-    refPrice = prices.reduce((a,b) => a+b, 0) / prices.length;
-    // Adjust for year difference
-    const avgRefYear = refs.reduce((a,r) => a + parseInt(r.year), 0) / refs.length;
-    const yearDiff = year - avgRefYear;
-    refPrice *= (1 + yearDiff * 0.07);
-  }
-
-  // Method 2: Depreciation model
-  const currentYear = 2026;
-  const age = currentYear - year;
-  const BASE_PRICES = {
-    'Toyota': 95000, 'Nissan': 80000, 'Hyundai': 75000, 'Kia': 70000,
-    'Honda': 85000, 'Mercedes': 180000, 'BMW': 170000, 'Lexus': 200000,
-    'Ford': 90000, 'Chevrolet': 85000, 'Jeep': 140000, 'GMC': 150000,
-    'Dodge': 100000, 'Mitsubishi': 70000, 'MG': 60000, 'Changan': 55000,
-    'Geely': 55000, 'Chery': 50000, 'Haval': 65000, 'Mazda': 80000
-  };
-  const base = BASE_PRICES[brand] || 85000;
-  const depRate = brand.match(/Toyota|Lexus|Honda/) ? 0.08 : 
-                  brand.match(/Mercedes|BMW/) ? 0.14 : 0.11;
-  const depPrice = base * Math.pow(1 - depRate, age);
-
-  // Combine
-  let fmv;
-  if (refPrice && refs.length >= 3) {
-    fmv = refPrice * 0.7 + depPrice * 0.3;
-  } else if (refPrice) {
-    fmv = refPrice * 0.5 + depPrice * 0.5;
-  } else {
-    fmv = depPrice;
-  }
-  return Math.round(fmv);
-}
-
-function calcDealScore(listing, fmv) {
-  if (!fmv) return 50;
-  const price = parseInt(listing.price);
-  const priceDiff = (fmv - price) / fmv;
-  
-  // Price score (0-60 points)
-  let priceScore = Math.min(60, Math.max(0, priceDiff * 200 + 30));
-  
-  // Year score (0-20 points)
-  const age = 2026 - parseInt(listing.year);
-  const yearScore = Math.max(0, 20 - age * 1.5);
-  
-  // Brand reliability score (0-10 points)
-  const reliable = {'Toyota':10,'Lexus':10,'Honda':9,'Nissan':7,'Hyundai':7,'Kia':7,'Mazda':8};
-  const brandScore = reliable[listing.brandEn] || 5;
-  
-  // Urgency bonus (0-10 points)
-  const urgentWords = ['ÙØ³ØªØ¹Ø¬Ù','Ø¹Ø§Ø¬Ù','Ø¹ÙÙ Ø§ÙØ³ÙÙ','Ø§ÙØ¨ÙØ¹ Ø§ÙÙÙÙ','ØªÙØ§Ø²Ù','ÙÙÙ ÙÙØ§ÙØ©'];
-  const urgency = urgentWords.some(w => listing.title.includes(w)) ? 10 : 0;
-  
-  return Math.min(100, Math.max(0, Math.round(priceScore + yearScore + brandScore + urgency)));
-}
-
-// === PROCESS DATA ===
-const listings = RAW_LISTINGS.filter(l => !l.title.includes('ÙØ·ÙÙØ¨')).map(l => {
-  const fmv = calcFMV(l);
-  const score = calcDealScore(l, fmv);
-  const price = parseInt(l.price);
-  const priceDiffPct = fmv ? Math.round((fmv - price) / fmv * 100) : 0;
-  return { ...l, price, year: parseInt(l.year), mileage: parseInt(l.mileage), fmv, score, priceDiffPct };
-});
-
-// === AUTH UI FUNCTIONS ===
-function openAuthModal() {
-  document.getElementById('authModal').classList.add('active');
-  authMode = 'login';
-  switchAuthTab('login');
-}
-
-function closeAuthModal() {
-  document.getElementById('authModal').classList.remove('active');
-  document.getElementById('authMessage').innerHTML = '';
-  document.getElementById('authForm').reset();
-}
-
-function switchAuthTab(mode) {
-  authMode = mode;
-  document.getElementById('loginTab').classList.toggle('active', mode === 'login');
-  document.getElementById('registerTab').classList.toggle('active', mode === 'register');
-  document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ' : 'Ø¥ÙØ´Ø§Ø¡ Ø­Ø³Ø§Ø¨';
-}
-
-async function handleAuthSubmit(event) {
-  event.preventDefault();
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value.trim();
-  const messageDiv = document.getElementById('authMessage');
-
-  try {
-    messageDiv.innerHTML = '';
-    let result;
-    if (authMode === 'login') {
-      result = await supabase.auth.signInWithPassword({ email, password });
-    } else {
-      result = await supabase.auth.signUp({ email, password });
-    }
-
-    if (result.error) {
-      messageDiv.innerHTML = `<div class="auth-error">${result.error.message}</div>`;
-    } else {
-      messageDiv.innerHTML = `<div class="auth-success">${authMode === 'login' ? 'ØªÙ ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ Ø¨ÙØ¬Ø§Ø­' : 'ØªÙ Ø¥ÙØ´Ø§Ø¡ Ø§ÙØ­Ø³Ø§Ø¨ Ø¨ÙØ¬Ø§Ø­'}</div>`;
-      setTimeout(() => closeAuthModal(), 1500);
-    }
-  } catch (error) {
-    messageDiv.innerHTML = `<div class="auth-error">${error.message}</div>`;
-  }
-}
-
-function updateAuthUI() {
-  const userArea = document.getElementById('userArea');
-  const favBtn = document.getElementById('favBtn');
-  const saveSearchArea = document.getElementById('saveSearchArea');
-
-  userArea.innerHTML = currentUser
-    ? `<span class="user-email">${currentUser.email}</span>
-       <button class="nav-btn" onclick="handleLogout()">Ø®Ø±ÙØ¬</button>`
-    : `<button class="auth-btn" onclick="openAuthModal()">ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ</button>`;
-
-  favBtn.style.display = currentUser ? 'block' : 'none';
-  saveSearchArea.style.display = currentUser ? 'flex' : 'none';
-}
-
-async function handleLogout() {
-  await supabase.auth.signOut();
-  currentUser = null;
-  favorites.clear();
-  updateAuthUI();
-  document.querySelectorAll('.fav-heart').forEach(h => h.remove());
-}
-
-// === FAVORITES FUNCTIONS ===
-async function loadFavorites() {
-  if (!currentUser) return;
-  try {
-    const { data } = await supabase
-      .from('favorites')
-      .select('listing_id')
-      .eq('user_id', currentUser.id);
-
-    favorites.clear();
-    if (data) {
-      data.forEach(fav => favorites.add(fav.listing_id));
-    }
-    renderTopDeals();
-    renderTable();
-  } catch (error) {
-    console.log('Favorites sync note:', error.message);
-  }
-}
-
-async function toggleFavorite(event, listingId) {
-  event.stopPropagation();
-  if (!currentUser) {
-    openAuthModal();
-    return;
-  }
-
-  try {
-    if (favorites.has(listingId)) {
-      await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', currentUser.id)
-        .eq('listing_id', listingId);
-      favorites.delete(listingId);
-    } else {
-      await supabase
-        .from('favorites')
-        .insert([{ user_id: currentUser.id, listing_id: listingId }]);
-      favorites.add(listingId);
-    }
-    renderTopDeals();
-    renderTable();
-  } catch (error) {
-    console.log('Favorite toggle note:', error.message);
-  }
-}
-
-function renderFavorites() {
-  const favListings = listings.filter(l => favorites.has(l.haraj_id));
-  document.getElementById('favoritesGrid').innerHTML = favListings.length > 0
-    ? favListings.map(l => renderCard(l, true)).join('')
-    : '<p style="color:var(--text2);text-align:center;padding:40px">ÙÙ ØªØ¶Ù Ø£Ù Ø³ÙØ§Ø±Ø§Øª ÙÙÙÙØ¶ÙØ© Ø¨Ø¹Ø¯</p>';
-}
-
-// === SAVED SEARCHES FUNCTIONS ===
-async function loadSavedSearches() {
-  if (!currentUser) return;
-  try {
-    const { data } = await supabase
-      .from('saved_searches')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
-
-    savedSearches = data || [];
-    const select = document.getElementById('savedSearchesSelect');
-    select.innerHTML = '<option value="">Ø§ÙØ¨Ø­ÙØ« Ø§ÙÙØ­ÙÙØ¸Ø©</option>';
-    savedSearches.forEach(search => {
-      const opt = document.createElement('option');
-      opt.value = search.id;
-      opt.textContent = search.name;
-      select.appendChild(opt);
-    });
-  } catch (error) {
-    console.log('Saved searches load note:', error.message);
-  }
-}
-
-function openSaveSearchDialog() {
-  const name = prompt('Ø£Ø¹Ø· Ø§ÙØ¨Ø­Ø« Ø§Ø³ÙØ§Ù:');
-  if (!name) return;
-  saveCurrentSearch(name);
-}
-
-async function saveCurrentSearch(name) {
-  if (!currentUser) return;
-  try {
-    const filters = {
-      q: document.getElementById('searchInput').value,
-      brand: document.getElementById('filterBrand').value,
-      city: document.getElementById('filterCity').value,
-      year: document.getElementById('filterYear').value,
-      gear: document.getElementById('filterGear').value,
-      sort: document.getElementById('filterSort').value
-    };
-
-    await supabase
-      .from('saved_searches')
-      .insert([{
-        user_id: currentUser.id,
-        name: name,
-        filters: filters
-      }]);
-
-    loadSavedSearches();
-  } catch (error) {
-    console.log('Save search note:', error.message);
-  }
-}
-
-function loadSavedSearch() {
-  const select = document.getElementById('savedSearchesSelect');
-  const searchId = select.value;
-  if (!searchId) return;
-
-  const search = savedSearches.find(s => s.id === searchId);
-  if (!search) return;
-
-  const filters = search.filters;
-  document.getElementById('searchInput').value = filters.q || '';
-  document.getElementById('filterBrand').value = filters.brand || '';
-  document.getElementById('filterCity').value = filters.city || '';
-  document.getElementById('filterYear').value = filters.year || '';
-  document.getElementById('filterGear').value = filters.gear || '';
-  document.getElementById('filterSort').value = filters.sort || 'score';
-
-  applyFilters();
-  select.value = '';
-}
-
-// === HELPERS ===
-const fmt = n => n ? n.toLocaleString('ar-SA') : 'â';
-const fmtSAR = n => n ? n.toLocaleString('ar-SA') + ' Ø±.Ø³' : 'â';
-const gearLabel = g => g === 'A' ? 'Ø£ÙØªÙÙØ§ØªÙÙ' : g === 'M' ? 'Ø¹Ø§Ø¯Ù' : g;
-const fuelLabel = f => f === 'G' ? 'Ø¨ÙØ²ÙÙ' : f === 'D' ? 'Ø¯ÙØ²Ù' : f === 'H' ? 'ÙØ§ÙØ¨Ø±Ø¯' : f;
-const scoreColor = s => s >= 75 ? 'var(--great)' : s >= 55 ? 'var(--accent)' : s >= 35 ? 'var(--warning)' : 'var(--danger)';
-const scoreBadge = s => s >= 75 ? 'badge-great' : s >= 55 ? 'badge-good' : s >= 35 ? 'badge-fair' : 'badge-poor';
-const scoreLabel = s => s >= 75 ? 'ØµÙÙØ© ÙÙØªØ§Ø²Ø©' : s >= 55 ? 'ØµÙÙØ© Ø¬ÙØ¯Ø©' : s >= 35 ? 'Ø³Ø¹Ø± ÙØ¹ÙÙÙ' : 'Ø³Ø¹Ø± ÙØ±ØªÙØ¹';
-const brandEmoji = b => ({'Toyota':'ð','Nissan':'ð','Hyundai':'ðï¸','Mercedes':'â­','BMW':'ðµ','Honda':'ð»','Lexus':'ð','Ford':'ð','Kia':'ð¢','Jeep':'ðï¸','Chevrolet':'ð¶','GMC':'ð¡ï¸'}[b] || 'ð');
-
-function renderCard(l, showFavHeart = true) {
-  const diffText = l.fmv ? (l.priceDiffPct > 0
-    ? `<span class="below">Ø£ÙÙ ÙÙ Ø§ÙØ³ÙÙ ${l.priceDiffPct}%</span>`
-    : `<span class="above">Ø£Ø¹ÙÙ ÙÙ Ø§ÙØ³ÙÙ ${Math.abs(l.priceDiffPct)}%</span>`) : '';
-  const isFavorited = currentUser && favorites.has(l.haraj_id);
-  const heartIcon = showFavHeart && currentUser ? `<span class="fav-heart ${isFavorited ? 'favorited' : ''}" onclick="toggleFavorite(event, '${l.haraj_id}')" title="Ø¥Ø¶Ø§ÙØ© ÙÙÙÙØ¶ÙØ©">${isFavorited ? 'â¤ï¸' : 'ð¤'}</span>` : '';
-  return `
-  <div class="listing-card" onclick="showDetail('${l.haraj_id}')">
-    <span class="card-badge ${scoreBadge(l.score)}">${scoreLabel(l.score)} ${l.score}</span>
-    ${heartIcon ? `<div style="position:absolute;top:12px;right:60px;z-index:3">${heartIcon}</div>` : ''}
-    <div class="card-img">${l.image_url ? '<img src="'+l.image_url+'" loading="lazy" alt="">' : brandEmoji(l.brandEn)}<br><span style="font-size:16px;margin-top:8px;display:block">${l.brandAr}</span></div>
-    <div class="card-body">
-      <div class="card-title">${l.title}</div>
-      <div class="card-meta">
-        <span class="meta-tag">${l.year}</span>
-        <span class="meta-tag">${l.city}</span>
-        <span class="meta-tag">${gearLabel(l.gear)}</span>
-        <span class="meta-tag">${fuelLabel(l.fuel)}</span>
-        ${l.mileage > 0 ? `<span class="meta-tag">${fmt(l.mileage)} ÙÙ</span>` : ''}
-      </div>
-      <div class="card-price-row">
-        <span class="card-price">${fmtSAR(l.price)}</span>
-        <span class="card-fmv">${diffText}</span>
-      </div>
-      <div class="deal-score-bar"><div class="deal-score-fill" style="width:${l.score}%;background:${scoreColor(l.score)}"></div></div>
-    </div>
-    <div class="card-footer">
-      <span style="color:var(--text2);font-size:12px">Ø§ÙÙÙÙØ© Ø§ÙØ³ÙÙÙØ©: ${fmtSAR(l.fmv)}</span>
-      <a href="https://haraj.com.sa/${l.haraj_id}" target="_blank" onclick="event.stopPropagation()">Ø¹Ø±Ø¶ ÙÙ Ø­Ø±Ø§Ø¬ â</a>
-    </div>
-  </div>`;
-}
-
-// === SECTIONS ===
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  if (name === 'favorites') renderFavorites();
-}
-
-// === KPIs ===
-function renderKPIs() {
-  const totalListings = listings.length;
-  const avgPrice = Math.round(listings.reduce((a,l) => a+l.price, 0) / totalListings);
-  const greatDeals = listings.filter(l => l.score >= 75).length;
-  const brands = [...new Set(listings.map(l => l.brandEn))].length;
-  const cities = [...new Set(listings.map(l => l.city))].length;
-  const avgScore = Math.round(listings.reduce((a,l) => a+l.score, 0) / totalListings);
-  
-  document.getElementById('kpiGrid').innerHTML = `
-    <div class="kpi"><div class="kpi-value">${totalListings}</div><div class="kpi-label">Ø¥Ø¬ÙØ§ÙÙ Ø§ÙÙÙØ§Ø¦Ù</div><div class="kpi-change up">${brands} ÙØ§Ø±ÙØ©</div></div>
-    <div class="kpi"><div class="kpi-value">${fmtSAR(avgPrice)}</div><div class="kpi-label">ÙØªÙØ³Ø· Ø§ÙØ³Ø¹Ø±</div></div>
-    <div class="kpi"><div class="kpi-value" style="color:var(--great)">${greatDeals}</div><div class="kpi-label">ØµÙÙØ§Øª ÙÙØªØ§Ø²Ø©</div><div class="kpi-change up">ÙØªÙØ¬Ø© 75+</div></div>
-    <div class="kpi"><div class="kpi-value">${cities}</div><div class="kpi-label">ÙØ¯Ù</div></div>
-    <div class="kpi"><div class="kpi-value">${avgScore}</div><div class="kpi-label">ÙØªÙØ³Ø· ÙÙØ§Ø· Ø§ÙØµÙÙØ©</div></div>
-  `;
-}
-
-// === TOP DEALS ===
-function renderTopDeals() {
-  const top = [...listings].sort((a,b) => b.score - a.score).slice(0, 6);
-  document.getElementById('topDeals').innerHTML = top.map(renderCard).join('');
-  document.getElementById('oppCount').textContent = listings.filter(l => l.score >= 70).length + ' ÙØ±ØµØ©';
-}
-
-// === SEARCH ===
-function populateFilters() {
-  const brands = [...new Set(listings.map(l => l.brandAr))].sort();
-  const cities = [...new Set(listings.map(l => l.city))].sort();
-  const years = [...new Set(listings.map(l => l.year))].sort((a,b) => b-a);
-  
-  const brandSel = document.getElementById('filterBrand');
-  brands.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; brandSel.appendChild(o); });
-  
-  const citySel = document.getElementById('filterCity');
-  cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; citySel.appendChild(o); });
-  
-  const yearSel = document.getElementById('filterYear');
-  years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; yearSel.appendChild(o); });
-}
-
-function applyFilters() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const brand = document.getElementById('filterBrand').value;
-  const city = document.getElementById('filterCity').value;
-  const year = document.getElementById('filterYear').value;
-  const gear = document.getElementById('filterGear').value;
-  const sort = document.getElementById('filterSort').value;
-  
-  let filtered = listings.filter(l => {
-    if (q && !l.title.toLowerCase().includes(q) && !l.brandAr.includes(q) && !l.brandEn.toLowerCase().includes(q)) return false;
-    if (brand && l.brandAr !== brand) return false;
-    if (city && l.city !== city) return false;
-    if (year && l.year !== parseInt(year)) return false;
-    if (gear && l.gear !== gear) return false;
-    return true;
-  });
-  
-  if (sort === 'score') filtered.sort((a,b) => b.score - a.score);
-  else if (sort === 'price_asc') filtered.sort((a,b) => a.price - b.price);
-  else if (sort === 'price_desc') filtered.sort((a,b) => b.price - a.price);
-  else if (sort === 'year_desc') filtered.sort((a,b) => b.year - a.year);
-  else if (sort === 'year_asc') filtered.sort((a,b) => a.year - b.year);
-  
-  document.getElementById('resultCount').textContent = `${filtered.length} ÙØªÙØ¬Ø©`;
-  document.getElementById('searchResults').innerHTML = filtered.map(renderCard).join('');
-}
-
-function resetFilters() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('filterBrand').value = '';
-  document.getElementById('filterCity').value = '';
-  document.getElementById('filterYear').value = '';
-  document.getElementById('filterGear').value = '';
-  document.getElementById('filterSort').value = 'score';
-  applyFilters();
-}
-
-// === OPPORTUNITIES ===
-function renderOpportunities() {
-  const opps = [...listings].filter(l => l.priceDiffPct > 5).sort((a,b) => b.priceDiffPct - a.priceDiffPct);
-  document.getElementById('oppGrid').innerHTML = opps.map(renderCard).join('');
-  document.getElementById('oppCount2').textContent = opps.length + ' ÙØ±ØµØ©';
-}
-
-// === TABLE ===
-let tableSortCol = -1, tableSortAsc = true;
-function renderTable() {
-  const sorted = [...listings].sort((a,b) => b.score - a.score);
-  document.getElementById('tableBody').innerHTML = sorted.map(l => `
-    <tr onclick="showDetail('${l.haraj_id}')" style="cursor:pointer">
-      <td>${l.brandAr}</td>
-      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.title}</td>
-      <td>${fmtSAR(l.price)}</td>
-      <td>${l.year}</td>
-      <td>${l.city}</td>
-      <td><span style="color:${scoreColor(l.score)};font-weight:700">${l.score}</span></td>
-      <td><a href="https://haraj.com.sa/${l.haraj_id}" target="_blank" onclick="event.stopPropagation()">â</a></td>
-    </tr>
-  `).join('');
-}
-
-function sortTable(col) {
-  if (tableSortCol === col) tableSortAsc = !tableSortAsc;
-  else { tableSortCol = col; tableSortAsc = true; }
-  const tbody = document.getElementById('tableBody');
-  const rows = Array.from(tbody.rows);
-  rows.sort((a,b) => {
-    let av = a.cells[col].textContent.trim().replace(/[^\d.-]/g,'');
-    let bv = b.cells[col].textContent.trim().replace(/[^\d.-]/g,'');
-    if (!isNaN(av) && !isNaN(bv)) return tableSortAsc ? av - bv : bv - av;
-    return tableSortAsc ? av.localeCompare(bv,'ar') : bv.localeCompare(av,'ar');
-  });
-  rows.forEach(r => tbody.appendChild(r));
-}
-
-// === DETAIL MODAL ===
-function showDetail(id) {
-  const l = listings.find(x => x.haraj_id === id);
-  if (!l) return;
-  document.getElementById('modalTitle').textContent = l.title;
-  document.getElementById('modalBody').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item"><div class="detail-label">Ø§ÙØ³Ø¹Ø± Ø§ÙÙØ·ÙÙØ¨</div><div class="detail-value" style="color:var(--accent2)">${fmtSAR(l.price)}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙÙÙØ© Ø§ÙØ³ÙÙÙØ© Ø§ÙÙÙØ¯Ø±Ø©</div><div class="detail-value">${fmtSAR(l.fmv)}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙØ±Ù Ø¹Ù Ø§ÙØ³ÙÙ</div><div class="detail-value" style="color:${l.priceDiffPct>0?'var(--great)':'var(--danger)'}">${l.priceDiffPct>0?'Ø£ÙÙ':'Ø£Ø¹ÙÙ'} ${Math.abs(l.priceDiffPct)}%</div></div>
-      <div class="detail-item"><div class="detail-label">ÙÙØ§Ø· Ø§ÙØµÙÙØ©</div><div class="detail-value" style="color:${scoreColor(l.score)}">${l.score}/100 â ${scoreLabel(l.score)}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙØ§Ø±ÙØ©</div><div class="detail-value">${l.brandAr} (${l.brandEn})</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙØ³ÙØ©</div><div class="detail-value">${l.year}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙØ¯ÙÙØ©</div><div class="detail-value">${l.city}</div></div>
-      <div class="detail-item"><div class="detail-label">ÙØ§ÙÙ Ø§ÙØ­Ø±ÙØ©</div><div class="detail-value">${gearLabel(l.gear)}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙÙÙØ¯</div><div class="detail-value">${fuelLabel(l.fuel)}</div></div>
-      <div class="detail-item"><div class="detail-label">Ø§ÙÙÙØ´Ù</div><div class="detail-value">${l.mileage > 0 ? fmt(l.mileage) + ' ÙÙ' : 'ØºÙØ± ÙØ­Ø¯Ø¯'}</div></div>
-    </div>
-    <div style="margin-top:20px;display:flex;gap:12px">
-      <a href="https://haraj.com.sa/${l.haraj_id}" target="_blank" class="btn btn-success" style="text-decoration:none">Ø¹Ø±Ø¶ ÙÙ Ø­Ø±Ø§Ø¬ â</a>
-    </div>
-  `;
-  document.getElementById('modal').classList.add('active');
-}
-function closeModal() { document.getElementById('modal').classList.remove('active'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-// === CHARTS ===
-function renderCharts() {
-  const brandGroups = {};
-  listings.forEach(l => {
-    if (!brandGroups[l.brandAr]) brandGroups[l.brandAr] = [];
-    brandGroups[l.brandAr].push(l.price);
-  });
-  const brandLabels = Object.keys(brandGroups).sort((a,b) => {
-    const avgA = brandGroups[a].reduce((x,y)=>x+y,0)/brandGroups[a].length;
-    const avgB = brandGroups[b].reduce((x,y)=>x+y,0)/brandGroups[b].length;
-    return avgB - avgA;
-  });
-  const brandAvgs = brandLabels.map(b => Math.round(brandGroups[b].reduce((x,y)=>x+y,0)/brandGroups[b].length));
-  
-  new Chart(document.getElementById('chartBrand'), {
-    type: 'bar',
-    data: { labels: brandLabels, datasets: [{ label: 'ÙØªÙØ³Ø· Ø§ÙØ³Ø¹Ø± (Ø±.Ø³)', data: brandAvgs, backgroundColor: '#3b82f6', borderRadius: 6 }] },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
-  });
-
-  const cityGroups = {};
-  listings.forEach(l => { cityGroups[l.city] = (cityGroups[l.city]||0) + 1; });
-  const cityLabels = Object.keys(cityGroups).sort((a,b) => cityGroups[b] - cityGroups[a]);
-  const cityData = cityLabels.map(c => cityGroups[c]);
-  const cityColors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'];
-  
-  new Chart(document.getElementById('chartCity'), {
-    type: 'doughnut',
-    data: { labels: cityLabels, datasets: [{ data: cityData, backgroundColor: cityColors }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12 } } } }
-  });
-}
-
-function renderAnalyticsCharts() {
-  // Year-Price scatter by brand
-  const brands = [...new Set(listings.map(l => l.brandEn))];
-  const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48','#a855f7','#0ea5e9','#d946ef'];
-  const datasets = brands.map((b,i) => {
-    const pts = listings.filter(l => l.brandEn === b).map(l => ({ x: l.year, y: l.price }));
-    return { label: b, data: pts, backgroundColor: colors[i%colors.length], pointRadius: 6 };
-  });
-  
-  new Chart(document.getElementById('chartYearPrice'), {
-    type: 'scatter',
-    data: { datasets },
-    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }, scales: { x: { title: { display: true, text: 'Ø§ÙØ³ÙØ©', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { title: { display: true, text: 'Ø§ÙØ³Ø¹Ø± (Ø±.Ø³)', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } } }
-  });
-
-  // Deal scores histogram
-  const scoreBuckets = [0,0,0,0,0,0,0,0,0,0];
-  listings.forEach(l => { const bucket = Math.min(9, Math.floor(l.score / 10)); scoreBuckets[bucket]++; });
-  
-  new Chart(document.getElementById('chartScores'), {
-    type: 'bar',
-    data: { labels: ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'], datasets: [{ label: 'Ø¹Ø¯Ø¯ Ø§ÙÙÙØ§Ø¦Ù', data: scoreBuckets, backgroundColor: scoreBuckets.map((_,i) => i >= 7 ? '#22c55e' : i >= 5 ? '#3b82f6' : i >= 3 ? '#f59e0b' : '#ef4444'), borderRadius: 4 }] },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
-  });
-
-  // Brand count
-  const brandCounts = {};
-  listings.forEach(l => { brandCounts[l.brandAr] = (brandCounts[l.brandAr]||0)+1; });
-  const bcLabels = Object.keys(brandCounts).sort((a,b) => brandCounts[b]-brandCounts[a]);
-  
-  new Chart(document.getElementById('chartBrandCount'), {
-    type: 'bar',
-    data: { labels: bcLabels, datasets: [{ label: 'Ø¹Ø¯Ø¯ Ø§ÙÙÙØ§Ø¦Ù', data: bcLabels.map(b => brandCounts[b]), backgroundColor: '#10b981', borderRadius: 4 }] },
-    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
-  });
-}
-
-// === EXPOSE FUNCTIONS TO GLOBAL SCOPE ===
-// Required because onclick handlers in HTML need global access
-window.showSection = function(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  const navNames = ['home','search','opportunities','analytics','table','favorites'];
-  document.querySelectorAll('.nav-btn').forEach((b,i) => {
-    b.classList.toggle('active', navNames[i] === name);
-  });
-  if (name === 'analytics' && !window.__analyticsLoaded) { window.__analyticsLoaded = true; renderAnalyticsCharts(); }
-  if (name === 'favorites') renderFavorites();
-};
-window.openAuthModal = openAuthModal;
-window.closeAuthModal = closeAuthModal;
-window.switchAuthTab = switchAuthTab;
-window.handleAuthSubmit = handleAuthSubmit;
-window.handleLogout = handleLogout;
-window.resetFilters = resetFilters;
-window.openSaveSearchDialog = openSaveSearchDialog;
-window.sortTable = sortTable;
-window.closeModal = closeModal;
-window.toggleFavorite = toggleFavorite;
-window.showDetail = showDetail;
-
-// === RENDER UI SYNCHRONOUSLY ===
-try { renderKPIs(); } catch(e) { console.warn('renderKPIs error:', e); }
-try { renderTopDeals(); } catch(e) { console.warn('renderTopDeals error:', e); }
-try { populateFilters(); } catch(e) { console.warn('populateFilters error:', e); }
-try { applyFilters(); } catch(e) { console.warn('applyFilters error:', e); }
-try { renderOpportunities(); } catch(e) { console.warn('renderOpportunities error:', e); }
-try { renderTable(); } catch(e) { console.warn('renderTable error:', e); }
-try { renderCharts(); } catch(e) { console.warn('renderCharts error:', e); }
-
-// === INIT AUTH (non-blocking) ===
-async function initAuth() {
-  if (!supabase) return;
-  try {
-    const { data } = await supabase.auth.getSession();
-    currentUser = data?.session?.user || null;
-    updateAuthUI();
-    if (currentUser) {
-      await loadFavorites();
-      await loadSavedSearches();
-      renderTopDeals();
-      renderTable();
-    }
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      currentUser = session?.user || null;
-      updateAuthUI();
-      if (currentUser) {
-        await loadFavorites();
-        await loadSavedSearches();
-      } else {
-        favorites.clear();
-        savedSearches = [];
-      }
-      renderTopDeals();
-      renderTable();
-    });
-  } catch(e) {
-    console.warn('Auth init failed:', e);
-  }
-}
-initAuth();
-</script>
-  <script>
-    (function(){
-        var s=document.querySelector('body script:not([src])');
-        if(s&&typeof window.showSection==='undefined'){
-              try{(new Function(s.textContent))();}catch(e){console.error('bootstrap:',e);}
+        // Utility Functions
+        function formatPrice(price) {
+            if (!price) return '0 ر.س';
+            return new Intl.NumberFormat('ar-SA', {
+                style: 'currency',
+                currency: 'SAR',
+                maximumFractionDigits: 0
+            }).format(price);
         }
-    })();
-  </script>
-  </script>
-<script>
-(function(){
-  var U='https://jujqdxoybhkyzphztzcf.supabase.co';
-  var K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
-  function makeSkeleton(){
-    var c=document.createElement('div');
-    c.className='skeleton-card';c.dataset.skeleton='1';
-    c.innerHTML='<div class="skeleton-block" style="height:200px"></div>'+
-      '<div style="padding:16px 16px 12px">'+
-      '<div class="skeleton-block" style="height:16px;margin-bottom:10px;width:80%"></div>'+
-      '<div class="skeleton-block" style="height:13px;width:50%"></div></div>'+
-      '<div style="padding:0 16px 12px">'+
-      '<div class="skeleton-block" style="height:26px;width:40%"></div></div>';
-    return c;
-  }
-  function buildCards(rows){
-    var grid=document.querySelector('.listings-grid');
-    if(!grid)return;
-    grid.querySelectorAll('[data-scraped],[data-skeleton]').forEach(function(c){c.remove();});
-    var ex={};
-    document.querySelectorAll('a[href*="haraj.com.sa/"]').forEach(function(a){
-      var m=a.href.match(/haraj\.com\.sa\/(\d{9,})/);
-      if(m)ex[m[1]]=1;
-    });
-    rows.filter(function(r){return r.source_id&&!ex[r.source_id]&&r.image_url;})
-      .forEach(function(r,i){
-        var c=document.createElement('a');
-        c.href=r.url||'#';c.target='_blank';c.rel='noopener';
-        c.className='listing-card';c.dataset.scraped='1';
-        c.style.animationDelay=(i*55)+'ms';
-        c.innerHTML='<div class="card-badge" style="background:var(--accent);color:white">جديد</div>'+
-          '<div class="card-img" style="background:#1a1f35;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">'+
-          '<img src="'+r.image_url+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"></div>'+
-          '<div class="card-body"><div class="card-title">'+(r.title||'سيارة')+'</div></div>'+
-          '<div class="card-footer"><span class="card-price" style="font-size:20px;font-weight:800;color:var(--accent2)">'+(r.price?r.price+' ريال':'السعر عند التواصل')+'</span></div>';
-        grid.insertBefore(c,grid.firstChild);
-      });
-  }
-  function showSkeletons(){
-    var grid=document.querySelector('.listings-grid');
-    if(!grid)return;
-    for(var i=0;i<3;i++) grid.insertBefore(makeSkeleton(),grid.firstChild);
-  }
-  function refresh(){
-    fetch(U+'/rest/v1/listings?select=source_id,image_url,url,title,price&image_url=not.is.null&limit=100',{
-      headers:{apikey:K,Authorization:'Bearer '+K}
-    }).then(function(r){return r.json();}).then(function(rows){
-      if(!Array.isArray(rows))return;
-      window._harajImgMap=rows;
-      buildCards(rows);
-      setTimeout(function(){buildCards(rows);},1500);
-      setTimeout(function(){buildCards(rows);},4000);
-      setTimeout(refresh,7200000);
-    }).catch(function(){
-      document.querySelectorAll('[data-skeleton]').forEach(function(c){c.remove();});
-      setTimeout(refresh,300000);
-    });
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){showSkeletons();refresh();});
-  } else {
-    showSkeletons();refresh();
-  }
-})();
-</script>
+
+        function formatNumber(num) {
+            if (!num) return '0';
+            return new Intl.NumberFormat('ar-SA').format(Math.round(num));
+        }
+
+        function getOpportunityTypeBadge(type) {
+            const types = {
+                great_deal: { label: 'صفقة ممتازة', color: 'success' },
+                flip: { label: 'فرصة استثمارية', color: 'info' },
+                underpriced: { label: 'أقل من السوق', color: 'warning' },
+                urgent_seller: { label: 'بائع مستعجل', color: 'danger' }
+            };
+            return types[type] || { label: type, color: 'secondary' };
+        }
+
+        function getRiskLevelBadge(level) {
+            const levels = {
+                low: { label: 'منخفض', class: 'badge-success' },
+                medium: { label: 'متوسط', class: 'badge-warning' },
+                high: { label: 'مرتفع', class: 'badge-danger' }
+            };
+            return levels[level] || { label: level, class: 'badge-secondary' };
+        }
+
+        // Navigation
+        function navigate(hash) {
+            window.location.hash = hash;
+        }
+
+        function navigateToSearch(brand = '') {
+            if (brand) {
+                navigate('#/search');
+                setTimeout(() => {
+                    document.getElementById('filterBrand').value = brand;
+                    applyFilters();
+                }, 100);
+            } else {
+                navigate('#/search');
+            }
+        }
+
+        function searchByBrand(brand) {
+            navigateToSearch(brand);
+        }
+
+        function resetFilters() {
+            document.getElementById('filterBrand').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('yearMin').value = '';
+            document.getElementById('yearMax').value = '';
+            document.getElementById('priceMin').value = '';
+            document.getElementById('priceMax').value = '';
+            document.getElementById('opportunitiesOnly').checked = false;
+            document.getElementById('sortBy').value = 'deal_score';
+            applyFilters();
+        }
+
+        // Router
+        function handleRoute() {
+            const hash = window.location.hash.slice(1) || '/';
+            const [page, ...params] = hash.split('/').filter(Boolean);
+
+            // Hide all sections
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            if (page === '' || page === '') {
+                document.querySelector('#home').classList.add('active');
+                document.querySelectorAll('.nav-link')[0].classList.add('active');
+                loadHome();
+            } else if (page === 'search') {
+                document.querySelector('#search').classList.add('active');
+                document.querySelectorAll('.nav-link')[1].classList.add('active');
+                loadSearch();
+            } else if (page === 'opportunities') {
+                document.querySelector('#opportunities').classList.add('active');
+                document.querySelectorAll('.nav-link')[2].classList.add('active');
+                loadOpportunities();
+            } else if (page === 'listing' && params[0]) {
+                document.querySelector('#listingDetail').classList.add('active');
+                loadListingDetail(params[0]);
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        window.addEventListener('hashchange', handleRoute);
+
+        // Load Home Page
+        async function loadHome() {
+            await loadKPIs();
+            await loadTopOpportunities();
+        }
+
+        async function loadKPIs() {
+            try {
+                const kpiContainer = document.getElementById('kpiCards');
+
+                // Get listings count
+                const { count: totalListings } = await supabase
+                    .from('car_listings')
+                    .select('*', { count: 'exact', head: true });
+
+                // Get opportunities count
+                const { count: opportunitiesCount } = await supabase
+                    .from('opportunities')
+                    .select('*', { count: 'exact', head: true });
+
+                // Get statistics
+                const { data: listings } = await supabase
+                    .from('car_listings')
+                    .select('price_sar, discount_pct, deal_score, make_en')
+                    .limit(1000);
+
+                let avgPrice = 0, avgDiscount = 0, avgDealScore = 0, brands = new Set();
+
+                if (listings && listings.length > 0) {
+                    avgPrice = listings.reduce((sum, l) => sum + (l.price_sar || 0), 0) / listings.length;
+                    avgDiscount = listings.reduce((sum, l) => sum + (l.discount_pct || 0), 0) / listings.length;
+                    avgDealScore = listings.reduce((sum, l) => sum + (l.deal_score || 0), 0) / listings.length;
+                    listings.forEach(l => brands.add(l.make_en));
+                }
+
+                const kpis = [
+                    { title: 'إجمالي الإعلانات', value: formatNumber(totalListings || 0), subtitle: 'سيارة للبيع' },
+                    { title: 'الفرص المتاحة', value: formatNumber(opportunitiesCount || 0), subtitle: 'فرصة استثمارية' },
+                    { title: 'متوسط السعر', value: formatPrice(avgPrice), subtitle: 'في السوق' },
+                    { title: 'أفضل خصم', value: (avgDiscount || 0).toFixed(1) + '%', subtitle: 'متوسط الخصم' },
+                    { title: 'متوسط التقييم', value: (avgDealScore || 0).toFixed(1), subtitle: 'من 10' },
+                    { title: 'عدد الماركات', value: formatNumber(brands.size), subtitle: 'ماركة مختلفة' }
+                ];
+
+                kpiContainer.innerHTML = kpis.map(kpi => `
+                    <div class="card">
+                        <div class="card-title">${kpi.title}</div>
+                        <div class="card-value">${kpi.value}</div>
+                        <div class="card-subtitle">${kpi.subtitle}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.error('خة� table error:', e);
+            }
+        }       <div class="card-subtitle">${kpi.subtitle}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading KPIs:', error);
+                document.getElementById('kpiCards').innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
+            }
+        }
+
+        async function loadTopOpportunities() {
+            try {
+                const { data: opportunities } = await supabase
+                    .from('opportunities')
+                    .select(`
+                        id,
+                        listing_id,
+                        estimated_fmv,
+                        discount_pct,
+                        deal_score,
+                        expected_profit,
+                        roi_pct,
+                        risk_level,
+                        reason,
+                        opportunity_type,
+                        car_listings(title, price_sar, make_en, model, year, url)
+                    `)
+                    .limit(5)
+                    .order('deal_score', { ascending: false });
+
+                const container = document.getElementById('topOpportunitiesGrid');
+
+                if (!opportunities || opportunities.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-title">لا توجد فرص حالياً</div></div>';
+                    return;
+                }
+
+                container.innerHTML = opportunities.map(opp => createOpportunityCard(opp)).join('');
+            } catch (error) {
+                console.error('Error loading opportunities:', error);
+                document.getElementById('topOpportunitiesGrid').innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
+            }
+        }
+
+        // Load Search Page
+        async function loadSearch() {
+            await applyFilters();
+        }
+
+        async function applyFilters() {
+            try {
+                const brand = document.getElementById('filterBrand').value;
+                const city = document.getElementById('filterCity').value;
+                const yearMin = document.getElementById('yearMin').value;
+                const yearMax = document.getElementById('yearMax').value;
+                const priceMin = document.getElementById('priceMin').value;
+                const priceMax = document.getElementById('priceMax').value;
+                const opportunitiesOnly = document.getElementById('opportunitiesOnly').checked;
+                const sortBy = document.getElementById('sortBy').value;
+
+                const resultsContainer = document.getElementById('searchResults');
+                resultsContainer.innerHTML = '<div class="loading-container"><div class="spinner"></div><p class="loading-text">جاري البحث...</p></div>';
+
+                let query = supabase.from('car_listings').select('*, opportunities(id)');
+
+                if (brand) query = query.eq('make_en', brand);
+                if (city) query = query.eq('city', city);
+                if (yearMin) query = query.gte('year', yearMin);
+                if (yearMax) query = query.lte('year', yearMax);
+                if (priceMin) query = query.gte('price_sar', priceMin);
+                if (priceMax) query = query.lte('price_sar', priceMax);
+
+                query = query.order(sortBy, { ascending: sortBy === 'price_sar' || sortBy === 'year' });
+
+                const { data: listings, error } = await query.limit(50);
+
+                if (error) throw error;
+
+                let filtered = listings || [];
+
+                if (opportunitiesOnly) {
+                    filtered = filtered.filter(l => l.opportunities && l.opportunities.length > 0);
+                }
+
+                if (filtered.length === 0) {
+                    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">لم يتم العثور على نتائج</div><div class="empty-state-text">حاول تغيير معايير البحث</div></div>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = `<div class="grid-3">${filtered.map(listing => createListingCard(listing)).join('')}</div>`;
+            } catch (error) {
+                console.error('Error applying filters:', error);
+                document.getElementById('searchResults').innerHTML = '<div class="empty-state"><p>حدث خطأ في البحث</p></div>';
+            }
+        }
+
+        // Load Opportunities Page
+        let currentOpportunityFilter = 'all';
+
+        async function loadOpportunities() {
+            await filterOpportunitiesByType('all');
+        }
+
+        async function filterOpportunitiesByType(type) {
+            currentOpportunityFilter = type;
+
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            try {
+                const grid = document.getElementById('opportunitiesGrid');
+                grid.innerHTML = '<div class="loading-container"><div class="spinner"></div><p class="loading-text">جاري التحميل...</p></div>';
+
+                let query = supabase.from('opportunities').select(`
+                    id,
+                    listing_id,
+                    estimated_fmv,
+                    discount_pct,
+                    deal_score,
+                    expected_profit,
+                    roi_pct,
+                    risk_level,
+                    reason,
+                    opportunity_type,
+                    car_listings(title, price_sar, make_en, model, year, url)
+                `);
+
+                if (type !== 'all') {
+                    query = query.eq('opportunity_type', type);
+                }
+
+                const { data: opportunities, error } = await query.order('deal_score', { ascending: false }).limit(100);
+
+                if (error) throw error;
+
+                if (!opportunities || opportunities.length === 0) {
+                    grid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-state-icon">📊</div><div class="empty-state-title">لا توجد فرص في هذه الفئة</div></div>';
+                    updateOpportunitiesStats([]);
+                    return;
+                }
+
+                grid.innerHTML = `<div class="opportunities-grid">${opportunities.map(opp => createOpportunityCard(opp)).join('')}</div>`;
+                updateOpportunitiesStats(opportunities);
+            } catch (error) {
+                console.error('Error loading opportunities:', error);
+                grid.innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
+            }
+        }
+
+        function updateOpportunitiesStats(opportunities) {
+            const stats = document.getElementById('opportunityStats');
+            if (!stats) return;
+
+            const totalCount = opportunities.length;
+            const avgDiscount = opportunities.length > 0
+                ? opportunities.reduce((sum, o) => sum + (o.discount_pct || 0), 0) / opportunities.length
+                : 0;
+            const avgROI = opportunities.length > 0
+                ? opportunities.reduce((sum, o) => sum + (o.roi_pct || 0), 0) / opportunities.length
+                : 0;
+
+            stats.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">إجم��لي الفرص</div>
+                    <div class="stat-value">${totalCount}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">متوسط الخصم</div>
+                    <div class="stat-value">${avgDiscount.toFixed(1)}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">متوسط العائد</div>
+                    <div class="stat-value">${avgROI.toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        // Load Listing Detail
+        async function loadListingDetail(listingId) {
+            try {
+                const container = document.getElementById('detailContent');
+
+                const { data: listing, error } = await supabase
+                    .from('car_listings')
+                    .select('*, opportunities(*)')
+                    .eq('id', listingId)
+                    .single();
+
+                if (error || !listing) {
+                    container.innerHTML = '<div class="empty-state"><p>لم يتم الع+kور على الإعلان</p></div>';
+                    return;
+                }
+
+                const opp = listing.opportunities && listing.opportunities.length > 0 ? listing.opportunities[0] : null;
+                const typeBadge = opp ? getOpportunityTypeBadge(opp.opportunity_type) : null;
+                const riskBadge = opp ? getRiskLevelBadge(opp.risk_level) : null;
+
+                const discountColor = listing.discount_pct < 0 ? 'danger' : 'success';
+
+                container.innerHTML = `
+                    <div class="detail-header">
+                        <h1 class="detail-title">${listing.title || ''}</h1>
+                        <div class="detail-meta">
+                            <div class="detail-meta-item">
+                                <div class="detail-meta-label">الماركة والموديل</div>
+                                <div class="detail-meta-value">${listing.make_ar || listing.make_en || 'N/A'} ${listing.model || ''}</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="detail-meta-label">السنة</div>
+                                <div class="detail-meta-value">${listing.year || 'N/A'}</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="detail-meta-label">المسافة المقطوعة</div>
+                                <div class="detail-meta-value">${formatNumber(listing.mileage_km || 0)} كم</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="detail-meta-label">المدينة</div>
+                                <div class="detail-meta-value">${listing.city || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-price-comparison">
+                        <div class="comparison-bar">
+                            <div class="comparison-bar-title">مقارنة السعر مع القيمة السوقية العادلة</div>
+                            <div class="comparison-bar-chart" style="min-height: 80px;">
+                                ${createPriceComparisonChart(listing, opp)}
+                            </div>
+                            <div class="comparison-legend">
+                                <div class="comparison-legend-item">
+                                    <div class="comparison-legend-color" style="background: ${listing.discount_pct > 0 ? 'var(--success)' : 'var(--danger)'}; opacity: 0.3;"></div>
+                                    <span>سعر الإعلان: ${formatPrice(listing.price_sar)}</span>
+                                </div>
+                                <div class="comparison-legend-item">
+                                    <div class="comparison-legend-color" style="background: var(--accent-gold); opacity: 0.3;"></div>
+                                    <span>القيمة السوقية: ${formatPrice(opp?.estimated_fmv || listing.fair_market_value)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-title">السعر</div>
+                            <div class="card-value">${formatPrice(listing.price_sar)}</div>
+                            <div class="card-subtitle">سعر الإعلان الحالي</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">القيمة السوقية العادلة</div>
+                            <div class="card-value">${formatPrice(opp?.estimated_fmv || listing.fair_market_value)}</div>
+                            <div class="card-subtitle">تقدير قيمة السوق</div>
+                        </div>
+
+                        ${opp ? `
+                            <div class="card">
+                                <div class="card-title">الخصم</div>
+                                <div class="card-value" style="color: ${opp.discount_pct > 0 ? 'var(--success)' : 'var(--danger)'};">${opp.discount_pct > 0 ? '+' : ''}${opp.discount_pct.toFixed(1)}%</div>
+                                <div class="card-subtitle">مقابل القيمة السوقية</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">تقييم العرض</div>
+                                <div class="card-value">${(opp.deal_score || 0).toFixed(1)}/10</div>
+                                <div class="card-subtitle">جودة العرض</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">الربح المتوقع</div>
+                                <div class="card-value" style="color: var(--success);">+${formatPrice(opp.expected_profit || 0)}</div>
+                                <div class="card-subtitle">إذا تم البيع بسعر السوق</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">العائد على الاستثم��ر</div>
+                                <div class="card-value" style="color: var(--success);">+${(opp.roi_pct || 0).toFixed(1)}%</div>
+                                <div class="card-subtitle">نسبة الع��ئد المتوقعة</div>
+                            </div>
+                        ` : ''}
+
+                        <div class="card">
+                            <div class="card-title">نوع الناقل</div>
+                            <div class="card-value" style="font-size: 1.25rem; color: var(--text-primary);">${listing.transmission === 'Automatic' ? 'أوتوماتيك' : 'يدوي'}</div>
+                            <div class="card-subtitle">${listing.transmission || 'N/A'}</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">نوع الوقود</div>
+                            <div class="card-value" style="font-size: 1.25rem; color: var(--text-primary);">${getFuelTypeLabel(listing.fuel_type)}</div>
+                            <div class="card-subtitle">${listing.fuel_type || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    ${opp ? `
+                        <div class="card" style="margin-top: 2rem;">
+                            <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">تفاصيل الفرصة</h3>
+                            <div class="grid-2" style="gap: 1.5rem;">
+                                <div>
+                                    <div class="filter-label">نوع الفرصة</div>
+                                    <span class="badge badge-${typeBadge.color}">${typeBadge.label}</span>
+                                </div>
+                                <div>
+                                    <div class="filter-label">مستوى المخ(�طرة</div>
+                                    <span class="badge ${riskBadge.class}">${riskBadge.label}</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div class="filter-label">السبب</div>
+                                <p style="color: var(--text-secondary); line-height: 1.6;">${opp.reason || 'لا توجد معلومات'}</p>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%); color: var(--bg-primary); border: none;">
+                        <a href="${listing.url}" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem;">
+                            🔗 عرض الإعلان الأصلي على حراج
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading listing detail:', error);
+                container.innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
+            }
+        }
+
+        function getFuelTypeLabel(type) {
+            const labels = {
+                'Petrol': 'بنزين',
+                'Diesel': 'ديزل',
+                'Hybrid': 'هجين',
+                'Electric': 'كهربائي'
+            };
+            return labels[type] || type;
+        }
+
+        function createPriceComparisonChart(listing, opp) {
+            const fmv = opp?.estimated_fmv || listing.fair_market_value || listing.price_sar;
+            const price = listing.price_sar;
+
+            const minPrice = Math.min(price, fmv) * 0.9;
+            const maxPrice = Math.max(price, fmv) * 1.1;
+            const range = maxPrice - minPrice;
+
+            const pricePercent = ((price - minPrice) / range) * 100;
+            const fmvPercent = ((fmv - minPrice) / range) * 100;
+
+            const priceColor = price < fmv ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)';
+
+            return `
+                <div style="position: relative; height: 100%;">
+                    <div class="price-bar" style="margin-top: 1rem;">
+                        <div class="price-bar-fill" style="width: ${pricePercent}%; background: ${priceColor};"></div>
+                    </div>
+                    <div class="comparison-bar-marker" style="left: ${pricePercent}%; background: ${priceColor};">
+                        <div class="comparison-bar-label" style="color: ${priceColor};">السعر</div>
+                    </div>
+                    <div class="price-bar" style="margin-top: 1.5rem;">
+                        <div class="price-bar-fill" style="width: ${fmvPercent}%; background: rgba(245, 158, 11, 0.6);"></div>
+                    </div>
+                    <div class="comparison-bar-marker" style="left: ${fmvPercent}%; background: var(--accent-gold);">
+                        <div class="comparison-bar-label" style="color: var(--accent-gold);">FMV</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createListingCard(listing) {
+            const hasOpportunity = listing.opportunities && listing.opportunities.length > 0;
+            const discountColor = listing.discount_pct >= 0 ? 'success' : 'danger';
+
+            return `
+                <div class="listing-card" onclick="navigate('#/listing/${listing.id}')">
+                    <div class="listing-card-header">
+                        <div class="listing-card-title">${listing.title || 'بدون عنوان'}</div>
+                        <div class="listing-card-meta">
+                            <span class="listing-card-meta-item">${listing.year || 'N/A'}</span>
+                            <span class="listing-card-meta-item">•</span>
+                            <span class="listing-card-meta-item">${listing.city || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="listing-card-body">
+                        <div class="price-comparison">
+                            <div class="price-row">
+                                <span class="price-label">سعر الإعلان</span>
+                                <span class="price-value">${formatPrice(listing.price_sar)}</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">القيمة السوقية</span>
+                                <span class="price-value">${formatPrice(listing.fair_market_value)}</span>
+                            </div>
+                            ${listing.discount_pct ? `
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                                    <span class="price-label">الخصم</span>
+                                    <span style="color: ${listing.discount_pct >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${listing.discount_pct > 0 ? '+' : ''}${listing.discount_pct.toFixed(1)}%</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        ${listing.deal_score ? `
+                            <div class="deal-score">
+                                <span class="deal-score-label">تقييم العرض</span>
+                                <span class="deal-score-value">${listing.deal_score.toFixed(1)}</span>
+                            </div>
+                        ` : ''}
+
+                        ${hasOpportunity ? `<span class="badge badge-success">فرصة مميزة</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createOpportunityCard(opp) {
+            const listing = opp.car_listings;
+            const typeBadge = getOpportunityTypeBadge(opp.opportunity_type);
+            const riskBadge = getRiskLevelBadge(opp.risk_level);
+
+            return `
+                <div class="opportunity-card" onclick="navigate('#/listing/${opp.listing_id}')">
+                    <div class="opportunity-header">
+                        <div class="opportunity-title">${listing?.title || 'بدون عنوان'}|/div>
+                        <span class="opportunity-type-badge badge-${typeBadge.color}" style="margin-top: 0.5rem; display: inline-block;">
+                            ${typeBadge.label}
+                        </span>
+                        <div class="opportunity-meta">
+                            <span>${listing?.year || 'N/A'}</span>
+                            <span>•</span>
+                            <span>${listing?.make_en || 'N/A'} ${listing?.model || ''}</span>
+                        </div>
+                    </div>
+
+                    <div class="opportunity-body">
+                        <div class="opportunity-stat">
+                            <div class="opportunity-stat-label">السعر الحالي</div>
+                            <div class="opportunity-stat-value">${formatPrice(listing?.price_sar)}</div>
+                        </div>
+                        <div class="opportunity-stat">
+                            <div class="opportunity-stat-label">القيمة السوقية</div>
+                            <div class="opportunity-stat-value">${formatPrice(opp.estimated_fmv)}</div>
+                        </div>
+                        <div class="opportunity-stat">
+                            <div class="opportunity-stat-label">الخصم</div>
+                            <div class="opportunity-stat-value" style="color: ${opp.discount_pct > 0 ? 'var(--success)' : 'var(--danger)'};">
+                                ${opp.discount_pct > 0 ? '+' : ''}${opp.discount_pct.toFixed(1)}%
+                            </div>
+                        </div>
+                        <div class="opportunity-stat">
+                            <div class="opportunity-stat-label">الضائد المتوقع</div>
+                            <div class="opportunity-stat-value" style="color: var(--success);">+${(opp.roi_pct || 0).toFixed(1)}%</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <div class="opportunity-reason">
+                            ${opp.reason || 'فرصة استثمارية مميزة'}
+                        </div>
+                    </div>
+
+                    <div class="opportunity-risk">
+                        <span style="font-size: 0.875rem; color: var(--text-secondary);">مستوى المخاطرة:</span>
+                        <span class="badge ${riskBadge.class}">${riskBadge.label}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            handleRoute();
+        });
+
+        // Home search
+        document.getElementById('homeSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value;
+                navigate('#/search');
+                setTimeout(() => {
+                    document.getElementById('filterBrand').value = query;
+                    applyFilters();
+                }, 100);
+            }
+        });
+    </script>
 </body>
 </html>
