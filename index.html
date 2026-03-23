@@ -1742,9 +1742,12 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize when ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', handleRoute);
+        } else {
             handleRoute();
-        });
+        }
 
         // Home search
         document.getElementById('homeSearch').addEventListener('keypress', (e) => {
