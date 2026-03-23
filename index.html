@@ -1206,7 +1206,7 @@
             // Update nav links
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
 
-            if (page === '' || page === '') {
+            if (!page || page === '') {
                 document.querySelector('#home').classList.add('active');
                 document.querySelectorAll('.nav-link')[0].classList.add('active');
                 loadHome();
