@@ -922,7 +922,18 @@
             font-weight: 700;
             color: var(--accent-gold);
         }
-    </style>
+    
+        .image-gallery { margin-bottom: 1.5rem; }
+        .gallery-main { width: 100%; height: 280px; object-fit: cover; border-radius: 12px; background: var(--surface); display: block; }
+        .gallery-placeholder { width: 100%; height: 280px; border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 4rem; gap: 0.5rem; border: 2px dashed var(--border); }
+        .gallery-placeholder-text { font-size: 0.875rem; }
+        .gallery-thumbs { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
+        .gallery-thumb { width: 72px; height: 56px; object-fit: cover; border-radius: 8px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; flex-shrink: 0; }
+        .gallery-thumb:hover, .gallery-thumb.active { opacity: 1; border: 2px solid var(--accent-blue); }
+        .haraj-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.875rem; margin-top: 0.75rem; }
+        .opp-card-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .opp-card-placeholder { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+</style>
 </head>
 <body>
     <div id="app">
@@ -1303,7 +1314,7 @@
                         risk_level,
                         reason,
                         opportunity_type,
-                        car_listings(title, price_sar, make_en, model, year, url)
+                        car_listings(title, price_sar, make_en, model, year, url, image_urls)
                     `)
                     .limit(5)
                     .order('deal_score', { ascending: false });
@@ -1479,6 +1490,7 @@
                 const discountColor = listing.discount_pct < 0 ? 'danger' : 'success';
 
                 container.innerHTML = `
+                    ${(() => { try { const imgs = listing.image_urls ? (Array.isArray(listing.image_urls) ? listing.image_urls : JSON.parse(listing.image_urls)) : []; const link = listing.url ? '<a class="haraj-link" href="' + listing.url + '" target="_blank">🔗 عرض الإعلان على حراج</a>' : ''; if (!imgs.length) return '<div class="image-gallery"><div class="gallery-placeholder"><span>🚗</span><span class="gallery-placeholder-text">لا توجد صور</span></div>' + link + '</div>'; const mid = 'gm' + listing.id.replace(/-/g,'').slice(0,8); const th = imgs.map((s,i) => '<img class="gallery-thumb' + (i===0?' active':'') + '" src="' + s + '" onclick="document.getElementById(\'' + mid + '\').src=this.src;document.querySelectorAll(\'.gallery-thumb\').forEach(t=>t.classList.remove(\'active\')); this.classList.add(\'active\')" loading="lazy">').join(''); return '<div class="image-gallery"><img id="' + mid + '" class="gallery-main" src="' + imgs[0] + '"><div class="gallery-thumbs">' + th + '</div>' + link + '</div>'; } catch(e) { return ''; } })()}
                     <div class="detail-header">
                         <h1 class="detail-title">${listing.title || ''}</h1>
                         <div class="detail-meta">
@@ -1697,6 +1709,7 @@
 
             return `
                 <div class="opportunity-card" onclick="navigate('#/listing/${opp.listing_id}')">
+                    ${(() => { try { const imgs = listing?.image_urls ? (Array.isArray(listing.image_urls) ? listing.image_urls : JSON.parse(listing.image_urls)) : []; return imgs.length ? '<img class="opp-card-img" src="' + imgs[0] + '" loading="lazy">' : '<div class="opp-card-placeholder">🚗</div>'; } catch(e) { return '<div class="opp-card-placeholder">🚗</div>'; } })()}
                     <div class="opportunity-header">
                         <div class="opportunity-title">${listing?.title || 'بدون عنوان'}</div>
                         <span class="opportunity-type-badge badge-${typeBadge.color}" style="margin-top: 0.5rem; display: inline-block;">
