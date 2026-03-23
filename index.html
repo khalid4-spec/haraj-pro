@@ -1207,9 +1207,12 @@
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
 
             if (!page || page === '') {
+                console.log('[HR] home route');
                 document.querySelector('#home').classList.add('active');
-                document.querySelectorAll('.nav-link')[0].classList.add('active');
-                loadHome();
+                const navLinks = document.querySelectorAll('.nav-link');
+                if (navLinks[0]) navLinks[0].classList.add('active');
+                console.log('[HR] calling loadHome');
+                loadHome().catch(e => console.error('[loadHome error]', e));
             } else if (page === 'search') {
                 document.querySelector('#search').classList.add('active');
                 document.querySelectorAll('.nav-link')[1].classList.add('active');
