@@ -1284,7 +1284,7 @@
             }
         }       <div class="card-subtitle">${kpi.subtitle}</div>
                     </div>
-                `).join('');
+                ).join('');
             } catch (error) {
                 console.error('Error loading KPIs:', error);
                 document.getElementById('kpiCards').innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
