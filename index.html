@@ -1126,7 +1126,7 @@
         const supabaseUrl = 'https://jujqdxoybhkyzphztzcf.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1anFkeG95YmhreXpwaHp0emNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTgzNTIsImV4cCI6MjA4OTMzNDM1Mn0.xpCH1wFZIUw1yqqn_4y66-Ci0yLy4crRNbcIjqzP6IY';
         const { createClient } = window.supabase;
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const sbClient = createClient(supabaseUrl, supabaseAnonKey);
 
         // Utility Functions
         function formatPrice(price) {
@@ -1242,17 +1242,17 @@
                 const kpiContainer = document.getElementById('kpiCards');
 
                 // Get listings count
-                const { count: totalListings } = await supabase
+                const { count: totalListings } = await sbClient
                     .from('car_listings')
                     .select('*', { count: 'exact', head: true });
 
                 // Get opportunities count
-                const { count: opportunitiesCount } = await supabase
+                const { count: opportunitiesCount } = await sbClient
                     .from('opportunities')
                     .select('*', { count: 'exact', head: true });
 
                 // Get statistics
-                const { data: listings } = await supabase
+                const { data: listings } = await sbClient
                     .from('car_listings')
                     .select('price_sar, discount_pct, deal_score, make_en')
                     .limit(1000);
@@ -1290,7 +1290,7 @@
 
         async function loadTopOpportunities() {
             try {
-                const { data: opportunities } = await supabase
+                const { data: opportunities } = await sbClient
                     .from('opportunities')
                     .select(`
                         id,
@@ -1341,7 +1341,7 @@
                 const resultsContainer = document.getElementById('searchResults');
                 resultsContainer.innerHTML = '<div class="loading-container"><div class="spinner"></div><p class="loading-text">جاري البحث...</p></div>';
 
-                let query = supabase.from('car_listings').select('*, opportunities(id)');
+                let query = sbClient.from('car_listings').select('*, opportunities(id)');
 
                 if (brand) query = query.eq('make_en', brand);
                 if (city) query = query.eq('city', city);
@@ -1392,7 +1392,7 @@
                 const grid = document.getElementById('opportunitiesGrid');
                 grid.innerHTML = '<div class="loading-container"><div class="spinner"></div><p class="loading-text">جاري التحميل...</p></div>';
 
-                let query = supabase.from('opportunities').select(`
+                let query = sbClient.from('opportunities').select(`
                     id,
                     listing_id,
                     estimated_fmv,
@@ -1461,7 +1461,7 @@
             try {
                 const container = document.getElementById('detailContent');
 
-                const { data: listing, error } = await supabase
+                const { data: listing, error } = await sbClient
                     .from('car_listings')
                     .select('*, opportunities(*)')
                     .eq('id', listingId)
