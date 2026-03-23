@@ -1078,7 +1078,7 @@
                     <button class="tab" onclick="filterOpportunitiesByType('great_deal')">صفقات ممتازة</button>
                     <button class="tab" onclick="filterOpportunitiesByType('flip')">فرص استثمارية</button>
                     <button class="tab" onclick="filterOpportunitiesByType('underpriced')">أقل من السوق</button>
-                    <button class="tab" onclick="filterOpportunitiesByType('urgent_seller')">بائعون مستعجلون</button>
+                    <button class="tab" onclick="filterOpportunitiesByType('urgent_seller')">بائعون مستعجلين</button>
                 </div>
 
                 <div style="margin-bottom: 2rem;">
@@ -1279,12 +1279,6 @@
                         <div class="card-subtitle">${kpi.subtitle}</div>
                     </div>
                 `).join('');
-            } catch(e) {
-                console.error('خة� table error:', e);
-            }
-        }       <div class="card-subtitle">${kpi.subtitle}</div>
-                    </div>
-                ).join('');
             } catch (error) {
                 console.error('Error loading KPIs:', error);
                 document.getElementById('kpiCards').innerHTML = '<div class="empty-state"><p>حدث خطأ في التحميل</p></div>';
@@ -1445,7 +1439,7 @@
 
             stats.innerHTML = `
                 <div class="stat-item">
-                    <div class="stat-label">إجم��لي الفرص</div>
+                    <div class="stat-label">إجمالي الفرص</div>
                     <div class="stat-value">${totalCount}</div>
                 </div>
                 <div class="stat-item">
@@ -1471,7 +1465,7 @@
                     .single();
 
                 if (error || !listing) {
-                    container.innerHTML = '<div class="empty-state"><p>لم يتم الع+kور على الإعلان</p></div>';
+                    container.innerHTML = '<div class="empty-state"><p>لم يتم الظ8�ور على الإعلان</p></div>';
                     return;
                 }
 
@@ -1544,9 +1538,9 @@
                             </div>
 
                             <div class="card">
-                                <div class="card-title">تقييم العرض</div>
+                                <div class="card-title">تقييم الضرض</div>
                                 <div class="card-value">${(opp.deal_score || 0).toFixed(1)}/10</div>
-                                <div class="card-subtitle">جودة العرض</div>
+                                <div class="card-subtitle">جودة الضرض</div>
                             </div>
 
                             <div class="card">
@@ -1556,9 +1550,9 @@
                             </div>
 
                             <div class="card">
-                                <div class="card-title">العائد على الاستثم��ر</div>
+                                <div class="card-title">العائد على الاستثمار</div>
                                 <div class="card-value" style="color: var(--success);">+${(opp.roi_pct || 0).toFixed(1)}%</div>
-                                <div class="card-subtitle">نسبة الع��ئد المتوقعة</div>
+                                <div class="card-subtitle">نسبة العائد المتوقعة</div>
                             </div>
                         ` : ''}
 
@@ -1584,7 +1578,7 @@
                                     <span class="badge badge-${typeBadge.color}">${typeBadge.label}</span>
                                 </div>
                                 <div>
-                                    <div class="filter-label">مستوى المخ(�طرة</div>
+                                    <div class="filter-label">مستوى المخاطرة</div>
                                     <span class="badge ${riskBadge.class}">${riskBadge.label}</span>
                                 </div>
                             </div>
@@ -1701,7 +1695,7 @@
             return `
                 <div class="opportunity-card" onclick="navigate('#/listing/${opp.listing_id}')">
                     <div class="opportunity-header">
-                        <div class="opportunity-title">${listing?.title || 'بدون عنوان'}|/div>
+                        <div class="opportunity-title">${listing?.title || 'بدون عنوان'}</div>
                         <span class="opportunity-type-badge badge-${typeBadge.color}" style="margin-top: 0.5rem; display: inline-block;">
                             ${typeBadge.label}
                         </span>
@@ -1728,7 +1722,7 @@
                             </div>
                         </div>
                         <div class="opportunity-stat">
-                            <div class="opportunity-stat-label">الضائد المتوقع</div>
+                            <div class="opportunity-stat-label">العائد المتوقع</div>
                             <div class="opportunity-stat-value" style="color: var(--success);">+${(opp.roi_pct || 0).toFixed(1)}%</div>
                         </div>
                     </div>
